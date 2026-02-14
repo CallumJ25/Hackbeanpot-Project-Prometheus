@@ -1,40 +1,40 @@
 import { FadeInSection, Quiz } from '../components';
-import { metrics } from '../educationalData';
+import { psychologyTopics } from '../educationalData';
 import { PageNavigation } from '../PageLayout';
 
 function Module2({ onQuizComplete, soundEnabled, quizScores }) {
   const getAnsweredCount = () => {
     let count = 0;
-    for (let i = 0; i < metrics.length; i++) {
-      if (quizScores[`metric-${i}`] !== undefined) count++;
+    for (let i = 0; i < psychologyTopics.length; i++) {
+      if (quizScores[`psych-${i}`] !== undefined) count++;
       else break;
     }
     return count;
   };
 
   const answeredCount = getAnsweredCount();
-  const allAnswered = answeredCount >= metrics.length;
+  const allAnswered = answeredCount >= psychologyTopics.length;
 
   return (
     <div className="min-h-screen bg-slate-900 pt-20 pb-32 md:pb-12">
       <div className="container mx-auto px-6">
         <FadeInSection>
           <div className="text-center mb-16">
-            <span className="inline-block bg-amber/10 text-amber px-4 py-1 rounded-full text-sm font-semibold mb-4">
+            <span className="inline-block bg-cream/10 text-cream px-4 py-1 rounded-full text-sm font-semibold mb-4">
               Module 2
             </span>
             <h1 className="font-display text-3xl md:text-5xl font-bold text-cream mb-4">
-              Key Metrics
+              Investor Psychology
             </h1>
             <p className="text-xl text-cream max-w-2xl mx-auto">
-              Numbers that actually matter when evaluating a stock.
+              Your brain is wired to make bad investment decisions. Here's why.
             </p>
           </div>
         </FadeInSection>
 
         <div className="max-w-4xl mx-auto space-y-12">
-          {metrics.map((metric, index) => {
-            const quizId = `metric-${index}`;
+          {psychologyTopics.map((topic, index) => {
+            const quizId = `psych-${index}`;
             const isAnswered = quizScores[quizId] !== undefined;
             const isVisible = index <= answeredCount;
             const wasCorrect = quizScores[quizId] === true;
@@ -43,67 +43,58 @@ function Module2({ onQuizComplete, soundEnabled, quizScores }) {
 
             return (
               <FadeInSection key={index} delay={0.1}>
-                <div className="bg-white rounded-2xl p-6 md:p-10 shadow-lg">
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="text-3xl">{metric.emoji}</span>
+                <div className="bg-navy-light/50 rounded-2xl p-6 md:p-10">
+                  <div className="flex items-center gap-3 mb-4">
+                    <span className="text-4xl">{topic.emoji}</span>
                     <div>
-                      <h3 className="font-display text-2xl font-bold text-navy">{metric.name}</h3>
-                      <p className="text-navy-light">{metric.subtitle}</p>
+                      <h3 className="font-display text-2xl font-bold">{topic.name}</h3>
+                      <p className="text-cream/70">{topic.fullName}</p>
                     </div>
                   </div>
                   
-                  <p className="text-navy-light mb-6">{metric.description}</p>
-                  
-                  <div className="bg-navy/5 rounded-xl p-4 mb-6 font-mono text-sm">
-                    <span className="text-navy font-semibold">{metric.formula}</span>
+                  <div className="bg-navy/50 rounded-xl p-4 mb-6">
+                    <p className="text-cream/90 italic">"{topic.scenario}"</p>
                   </div>
 
-                  <div className="bg-cream rounded-xl p-4 mb-6">
-                    <p className="text-navy"><span className="font-semibold">Example:</span> {metric.example}</p>
-                  </div>
-
-                  {metric.categories && (
-                    <div className="grid md:grid-cols-3 gap-4 mb-6">
-                      {metric.categories.map((cat, i) => (
-                        <div key={i} className="bg-cream-dark rounded-xl p-4">
-                          <p className="font-semibold text-navy">{cat.name}</p>
-                          <p className="text-teal font-mono text-sm">{cat.range}</p>
-                          <p className="text-navy-light text-sm">{cat.description}</p>
-                        </div>
-                      ))}
+                  <div className="space-y-4 mb-6">
+                    <div>
+                      <span className="text-coral font-semibold">The danger:</span>
+                      <p className="text-cream/80 mt-1">{topic.danger}</p>
                     </div>
-                  )}
-
-                  {metric.insight && (
-                    <div className="bg-amber/10 rounded-xl p-4 mb-6">
-                      <p className="text-navy"><span className="font-semibold text-amber">💡 Context:</span> {metric.insight}</p>
+                    <div>
+                      <span className="text-teal-light font-semibold">Real example:</span>
+                      <p className="text-cream/80 mt-1">{topic.realExample}</p>
                     </div>
-                  )}
-
-                  <div className="bg-teal/10 rounded-xl p-4 mb-6">
-                    <p className="text-navy"><span className="font-semibold text-teal">📌 Key takeaway:</span> {metric.keyTakeaway}</p>
+                    <div>
+                      <span className="text-sage font-semibold">The antidote:</span>
+                      <p className="text-cream/80 mt-1">{topic.antidote}</p>
+                    </div>
                   </div>
 
-                  <Quiz 
-                    quiz={metric.quiz} 
-                    onComplete={(correct) => onQuizComplete(quizId, correct)}
-                    soundEnabled={soundEnabled}
-                    answered={isAnswered}
-                    wasCorrect={wasCorrect}
-                    learnMoreUrl={metric.learnMoreUrl}
-                  />
+                  <div className="bg-white rounded-2xl p-6 md:p-8">
+                    <Quiz 
+                      quiz={topic.quiz} 
+                      onComplete={(correct) => onQuizComplete(quizId, correct)}
+                      soundEnabled={soundEnabled}
+                      answered={isAnswered}
+                      wasCorrect={wasCorrect}
+                      learnMoreUrl={topic.learnMoreUrl}
+                    />
+                  </div>
                 </div>
               </FadeInSection>
             );
           })}
 
-          <PageNavigation 
-            prevPath="/module/1" 
-            prevLabel="Chart Reading"
-            nextPath="/module/3" 
-            nextLabel="Psychology"
-            nextDisabled={!allAnswered}
-          />
+          <div className="pt-8">
+            <PageNavigation 
+              prevPath="/module/1" 
+              prevLabel="Key Metrics"
+              nextPath="/module/3" 
+              nextLabel="Common Mistakes"
+              nextDisabled={!allAnswered}
+            />
+          </div>
         </div>
       </div>
     </div>

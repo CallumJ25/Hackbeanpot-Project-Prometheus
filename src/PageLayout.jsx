@@ -2,10 +2,9 @@ import { Link, useLocation } from 'react-router-dom';
 
 const modules = [
   { path: '/', name: 'Home', short: '🏠', questions: 0, prefix: null },
-  { path: '/module/1', name: 'Chart Reading', short: '1', questions: 3, prefix: 'chart' },
-  { path: '/module/2', name: 'Key Metrics', short: '2', questions: 6, prefix: 'metric' },
-  { path: '/module/3', name: 'Psychology', short: '3', questions: 5, prefix: 'psych' },
-  { path: '/module/4', name: 'Mistakes', short: '4', questions: 5, prefix: 'mistake' },
+  { path: '/module/1', name: 'Key Metrics', short: '1', questions: 5, prefix: 'metric' },
+  { path: '/module/2', name: 'Psychology', short: '2', questions: 5, prefix: 'psych' },
+  { path: '/module/3', name: 'Mistakes', short: '3', questions: 5, prefix: 'mistake' },
   { path: '/simulation', name: 'Simulation', short: '🎮', questions: 0, prefix: null },
   { path: '/conclusion', name: 'Conclusion', short: '✓', questions: 0, prefix: null },
 ];
@@ -69,19 +68,19 @@ export const TopNav = ({ soundEnabled, setSoundEnabled, totalCorrect, totalAnswe
     if (index === 0) return true; // Home always unlocked
     if (index === 1) return true; // Module 1 always unlocked
     
-    // For modules 2-4, check if previous module is complete
+    // For modules 2-3, check if previous module is complete
     const prevModule = modules[index - 1];
     if (prevModule && prevModule.prefix) {
       return isModuleComplete(prevModule.prefix, prevModule.questions);
     }
     
-    // Simulation requires Module 4 complete
-    if (index === 5) {
+    // Simulation requires Module 3 complete
+    if (index === 4) {
       return isModuleComplete('mistake', 5);
     }
     
     // Conclusion is always accessible if simulation is
-    if (index === 6) {
+    if (index === 5) {
       return isModuleComplete('mistake', 5);
     }
     
