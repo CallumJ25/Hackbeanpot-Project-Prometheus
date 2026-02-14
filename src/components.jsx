@@ -32,8 +32,19 @@ export const FadeInSection = ({ children, className = "", delay = 0 }) => {
 };
 
 export const Quiz = ({ quiz, onComplete, soundEnabled = true, answered = false, wasCorrect = false }) => {
-  const [selected, setSelected] = useState(answered ? (wasCorrect ? quiz.correct : -1) : null);
-  const [showResult, setShowResult] = useState(answered);
+  const [selected, setSelected] = useState(null);
+  const [showResult, setShowResult] = useState(false);
+
+  // Reset local state when answered prop changes (e.g., when reset is pressed)
+  useEffect(() => {
+    if (answered) {
+      setSelected(wasCorrect ? quiz.correct : -1);
+      setShowResult(true);
+    } else {
+      setSelected(null);
+      setShowResult(false);
+    }
+  }, [answered, wasCorrect, quiz.correct]);
 
   const handleSelect = (index) => {
     if (showResult) return;

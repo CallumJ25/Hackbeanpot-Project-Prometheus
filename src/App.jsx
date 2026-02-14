@@ -11,8 +11,6 @@ import Module3 from './pages/Module3';
 import Module4 from './pages/Module4';
 import Simulation from './pages/Simulation';
 import Conclusion from './pages/Conclusion';
-import StockSimulation from './StockSimulation';
-import Animation from './pages/Animation';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -50,7 +48,7 @@ function App() {
     }
   };
 
-  const resetProgress = () => {text-cream/80
+  const resetProgress = () => {
     setQuizScores({});
     setTotalCorrect(0);
     setTotalAnswered(0);
@@ -60,7 +58,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-stale-900">
+    <div className="min-h-screen bg-cream">
       <ScrollToTop />
       <TopNav 
         soundEnabled={soundEnabled}

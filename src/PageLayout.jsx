@@ -1,13 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
 
 const modules = [
-  { path: '/', name: 'Home', short: '🏠', questions: 0 },
+  { path: '/', name: 'Home', short: '🏠', questions: 0, prefix: null },
   { path: '/module/1', name: 'Chart Reading', short: '1', questions: 3, prefix: 'chart' },
   { path: '/module/2', name: 'Key Metrics', short: '2', questions: 6, prefix: 'metric' },
   { path: '/module/3', name: 'Psychology', short: '3', questions: 5, prefix: 'psych' },
   { path: '/module/4', name: 'Mistakes', short: '4', questions: 5, prefix: 'mistake' },
-  { path: '/simulation', name: 'Simulation', short: '🎮', questions: 0 },
-  { path: '/conclusion', name: 'Conclusion', short: '✓', questions: 0 },
+  { path: '/simulation', name: 'Simulation', short: '🎮', questions: 0, prefix: null },
+  { path: '/conclusion', name: 'Conclusion', short: '✓', questions: 0, prefix: null },
 ];
 
 export const PageNavigation = ({ prevPath, nextPath, prevLabel, nextLabel, nextDisabled = false }) => {
@@ -58,28 +58,67 @@ export const TopNav = ({ soundEnabled, setSoundEnabled, totalCorrect, totalAnswe
     return count;
   };
 
+  // Check if a module is complete
+  const isModuleComplete = (prefix, total) => {
+    if (!prefix || total === 0) return true;
+    return getModuleProgress(prefix, total) >= total;
+  };
+
+  // Check if a module is unlocked (previous module is complete)
+  const isModuleUnlocked = (index) => {
+    if (index === 0) return true; // Home always unlocked
+    if (index === 1) return true; // Module 1 always unlocked
+    
+    // For modules 2-4, check if previous module is complete
+    const prevModule = modules[index - 1];
+    if (prevModule && prevModule.prefix) {
+      return isModuleComplete(prevModule.prefix, prevModule.questions);
+    }
+    
+    // Simulation requires Module 4 complete
+    if (index === 5) {
+      return isModuleComplete('mistake', 5);
+    }
+    
+    // Conclusion is always accessible if simulation is
+    if (index === 6) {
+      return isModuleComplete('mistake', 5);
+    }
+    
+    return true;
+  };
+
   return (
     <>
       {/* Vertical sidebar - desktop */}
       <nav className="fixed right-4 top-1/2 -translate-y-1/2 z-50 hidden md:block">
         <div className="flex flex-col items-center gap-3 bg-white/90 backdrop-blur px-3 py-4 rounded-2xl shadow-lg">
-          {modules.map((mod) => {
+          {modules.map((mod, index) => {
             const isActive = location.pathname === mod.path;
-            const answeredCount = getModuleProgress(mod.prefix, mod.questions);
+            const unlocked = isModuleUnlocked(index);
             
             return (
               <div key={mod.path} className="flex flex-col items-center">
-                <Link
-                  to={mod.path}
-                  className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all ${
-                    isActive 
-                      ? 'bg-teal text-white scale-110' 
-                      : 'bg-cream-dark text-navy hover:bg-teal/20'
-                  }`}
-                  title={mod.name}
-                >
-                  {mod.short}
-                </Link>
+                {unlocked ? (
+                  <Link
+                    to={mod.path}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all ${
+                      isActive 
+                        ? 'bg-teal text-white scale-110' 
+                        : 'bg-cream-dark text-navy hover:bg-teal/20'
+                    }`}
+                    title={mod.name}
+                  >
+                    {mod.short}
+                  </Link>
+                ) : (
+                  <div
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold bg-gray-200 text-gray-400 cursor-not-allowed"
+                    title={`Complete previous module to unlock ${mod.name}`}
+                  >
+                    {mod.short}
+                  </div>
+                )}
                 
                 {/* Question dots - only show for current module */}
                 {isActive && mod.questions > 0 && (
@@ -135,9 +174,20 @@ export const TopNav = ({ soundEnabled, setSoundEnabled, totalCorrect, totalAnswe
       {/* Mobile bottom nav */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white border-t border-cream-dark">
         <div className="flex justify-around py-2">
-          {modules.map((mod) => {
+          {modules.map((mod, index) => {
             const isActive = location.pathname === mod.path;
-            const answeredCount = getModuleProgress(mod.prefix, mod.questions);
+            const unlocked = isModuleUnlocked(index);
+            
+            if (!unlocked) {
+              return (
+                <div
+                  key={mod.path}
+                  className="flex flex-col items-center p-2 text-gray-300 cursor-not-allowed"
+                >
+                  <span className="text-lg">{mod.short}</span>
+                </div>
+              );
+            }
             
             return (
               <Link
