@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { Storage } from './utils';
-import { metrics, psychologyTopics, beginnerMistakes, chartLessons } from './educationalData';
+import { metrics, psychologyTopics, beginnerMistakes } from './educationalData';
 import { TopNav } from './PageLayout';
 
 import Home from './pages/Home';
 import Module1 from './pages/Module1';
 import Module2 from './pages/Module2';
 import Module3 from './pages/Module3';
-import Module4 from './pages/Module4';
 import Simulation from './pages/Simulation';
 import Conclusion from './pages/Conclusion';
 
@@ -28,7 +27,7 @@ function App() {
   const [totalCorrect, setTotalCorrect] = useState(() => Storage.load('totalCorrect', 0));
   const [totalAnswered, setTotalAnswered] = useState(() => Storage.load('totalAnswered', 0));
 
-  const totalQuizzes = metrics.length + psychologyTopics.length + beginnerMistakes.length + chartLessons.length;
+  const totalQuizzes = metrics.length + psychologyTopics.length + beginnerMistakes.length;
 
   useEffect(() => {
     Storage.save('quizScores', quizScores);
@@ -87,13 +86,6 @@ function App() {
         } />
         <Route path="/module/3" element={
           <Module3 
-            onQuizComplete={handleQuizComplete} 
-            soundEnabled={soundEnabled}
-            quizScores={quizScores}
-          />
-        } />
-        <Route path="/module/4" element={
-          <Module4 
             onQuizComplete={handleQuizComplete} 
             soundEnabled={soundEnabled}
             quizScores={quizScores}

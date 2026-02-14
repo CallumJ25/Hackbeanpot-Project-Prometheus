@@ -26,7 +26,7 @@ function Simulation() {
 
         <div className="max-w-4xl mx-auto">
           <PageNavigation 
-            prevPath="/module/4" 
+            prevPath="/module/3" 
             prevLabel="Common Mistakes"
             nextPath="/conclusion" 
             nextLabel="See Conclusion"
