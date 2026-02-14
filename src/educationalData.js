@@ -1,79 +1,3 @@
-// ==================== CHART LESSONS (no candlesticks) ====================
-export const chartLessons = [
-  {
-    name: "Volume",
-    emoji: "📊",
-    title: "Understanding Volume",
-    description: "Volume shows how many shares were traded. It helps confirm the strength of price movements.",
-    learnMoreUrl: "https://www.investopedia.com/terms/v/volume.asp",
-    points: [
-      { term: "High volume + price move", description: "Strong conviction—move is more likely to continue" },
-      { term: "Low volume + price move", description: "Weak conviction—move might reverse" },
-      { term: "Volume spikes", description: "Something significant happened (news, earnings, etc.)" }
-    ],
-    insight: "Think of volume as the 'confidence' behind a price move. A breakout on high volume is more meaningful than one on low volume.",
-    quiz: {
-      question: "A stock breaks above its all-time high on volume 5x higher than average. What does this suggest?",
-      options: [
-        "The breakout will definitely continue",
-        "Strong conviction—breakout more likely to hold",
-        "The stock is being manipulated",
-        "Volume doesn't matter for breakouts"
-      ],
-      correct: 1,
-      explanation: "High volume on a breakout suggests strong buyer conviction. Not a guarantee, but a positive sign."
-    }
-  },
-  {
-    name: "Trends",
-    emoji: "📈",
-    title: "Identifying Trends",
-    description: "Trends show the general direction. 'The trend is your friend'—it's generally easier to profit going with the trend than against it.",
-    learnMoreUrl: "https://www.investopedia.com/terms/t/trend.asp",
-    points: [
-      { term: "Uptrend", description: "Higher highs AND higher lows over time" },
-      { term: "Downtrend", description: "Lower highs AND lower lows over time" },
-      { term: "Sideways/Range", description: "Price bouncing between levels, no clear direction" }
-    ],
-    insight: "Trying to catch falling knives (buying during downtrends) or shorting rockets (betting against uptrends) is risky. Waiting for trend changes is often smarter.",
-    quiz: {
-      question: "A stock makes a new high of $50, pulls back to $45, then makes a new high of $55, pulls back to $48. What's the trend?",
-      options: [
-        "Downtrend—it keeps falling from highs",
-        "Uptrend—higher highs ($50→$55) and higher lows ($45→$48)",
-        "Sideways—it's just bouncing around",
-        "Can't determine from this information"
-      ],
-      correct: 1,
-      explanation: "Higher highs (50→55) AND higher lows (45→48) = uptrend. Both conditions must be met."
-    }
-  },
-  {
-    name: "Support & Resistance",
-    emoji: "🧱",
-    title: "Support & Resistance Levels",
-    description: "These are price levels where buying or selling pressure tends to emerge, causing price to bounce or stall.",
-    learnMoreUrl: "https://www.investopedia.com/trading/support-and-resistance-basics/",
-    points: [
-      { term: "Support", description: "A floor where buyers step in, preventing further drops" },
-      { term: "Resistance", description: "A ceiling where sellers emerge, preventing further rises" },
-      { term: "Role reversal", description: "Broken resistance becomes support, broken support becomes resistance" }
-    ],
-    insight: "These levels aren't magic—they're zones where many traders placed orders. The more times a level holds, the more significant it becomes.",
-    quiz: {
-      question: "A stock has bounced off $40 three times over six months. It's now at $42. What is $40?",
-      options: [
-        "Resistance—it can't break above",
-        "Support—buyers defend this level",
-        "Neither—three times isn't significant",
-        "A price target"
-      ],
-      correct: 1,
-      explanation: "$40 is support—a level where buyers consistently step in. The more touches without breaking, the stronger the support."
-    }
-  }
-];
-
 // ==================== FINANCIAL METRICS ====================
 export const metrics = [
   {
@@ -194,33 +118,6 @@ export const metrics = [
       correct: 1,
       explanation: "Dividend history matters more than current yield. Stock A's 25-year track record suggests reliability."
     }
-  },
-  {
-    name: "Debt-to-Equity",
-    subtitle: "How Much Does This Company Owe?",
-    emoji: "📊",
-    description: "This ratio compares what a company owes (debt) to what it owns (equity). It shows financial health and risk level.",
-    learnMoreUrl: "https://www.investopedia.com/terms/d/debtequityratio.asp",
-    formula: "D/E = Total Debt ÷ Shareholders' Equity",
-    example: "D/E of 0.5 means for every $1 of equity, there's $0.50 of debt. D/E of 2 means $2 of debt for every $1 of equity.",
-    insight: "Some debt is normal and can fuel growth. But too much debt means higher risk, especially during economic downturns when revenue drops but debt payments don't.",
-    categories: [
-      { name: "Low D/E", range: "< 0.5", description: "Conservative, stable" },
-      { name: "Moderate D/E", range: "0.5-1.5", description: "Balanced leverage" },
-      { name: "High D/E", range: "> 1.5", description: "Aggressive, higher risk" }
-    ],
-    keyTakeaway: "Compare D/E within the same industry. Capital-intensive industries (utilities, real estate) naturally have higher D/E.",
-    quiz: {
-      question: "Two retail companies: Company A has D/E of 0.3, Company B has D/E of 2.5. A recession hits. Which is likely more vulnerable?",
-      options: [
-        "Company A",
-        "Company B",
-        "They're equally vulnerable",
-        "Can't determine from D/E alone"
-      ],
-      correct: 1,
-      explanation: "Company B's high debt makes it more vulnerable during downturns—debt payments continue even if sales drop."
-    }
   }
 ];
 
@@ -230,6 +127,7 @@ export const psychologyTopics = [
     name: "FOMO",
     fullName: "Fear Of Missing Out",
     emoji: "😰",
+    learnMoreUrl: "https://www.investopedia.com/terms/r/regrettheory.asp",
     scenario: "Everyone's talking about a hot stock that's up 200% this month. Your friend just made $5,000. You feel the urge to buy now before it goes higher.",
     danger: "FOMO makes you buy at peaks. By the time 'everyone' knows about something, the easy gains are often gone. You end up buying high and selling low.",
     realExample: "During meme stock frenzies, many bought at peak prices driven by social media hype, only to see 50-80% losses within weeks.",
@@ -250,6 +148,7 @@ export const psychologyTopics = [
     name: "Loss Aversion",
     fullName: "Losses Hurt More Than Gains Feel Good",
     emoji: "😣",
+    learnMoreUrl: "https://www.investopedia.com/terms/l/loss-psychology.asp",
     scenario: "You bought a stock at $50. It drops to $35. You can't bring yourself to sell because that would 'make the loss real.' You hold, hoping it recovers.",
     danger: "Losses feel about twice as painful as equivalent gains feel good. This makes us hold losers too long and sell winners too early.",
     realExample: "Studies show investors hold losing stocks 1.5x longer than winners, hoping to 'break even'—often watching them fall further.",
@@ -270,6 +169,7 @@ export const psychologyTopics = [
     name: "Herd Mentality",
     fullName: "Following The Crowd",
     emoji: "🐑",
+    learnMoreUrl: "https://www.investopedia.com/terms/h/herdinstinct.asp",
     scenario: "Financial news says 'everyone' is buying tech stocks. Your coworkers are all talking about their gains. You feel foolish for not joining in.",
     danger: "Crowds create bubbles. When everyone buys, prices inflate beyond real value. When everyone panics, prices crash below fair value.",
     realExample: "The dot-com bubble (2000), housing crisis (2008), and various crypto bubbles all showed how crowd behavior amplifies both manias and crashes.",
@@ -290,6 +190,7 @@ export const psychologyTopics = [
     name: "Confirmation Bias",
     fullName: "Seeing What You Want To See",
     emoji: "🔍",
+    learnMoreUrl: "https://www.investopedia.com/terms/c/confirmation-bias.asp",
     scenario: "You love a company and buy its stock. Afterward, you only read positive news about it, dismiss negative reports, and seek out others who agree with you.",
     danger: "Confirmation bias blinds you to warning signs. You build confidence without building accuracy. Bad news gets filtered out until it's too late.",
     realExample: "Investors in major frauds (Enron, Theranos) often ignored red flags because they were emotionally invested in the success story.",
@@ -310,6 +211,7 @@ export const psychologyTopics = [
     name: "Overconfidence",
     fullName: "Thinking You're Smarter Than The Market",
     emoji: "😎",
+    learnMoreUrl: "https://www.investopedia.com/articles/investing/030515/how-avoid-being-overconfident-investor.asp",
     scenario: "You made money on a few trades. You start to think you have a 'talent' for picking stocks. You increase your position sizes and trade more frequently.",
     danger: "Early success often comes from luck, not skill. Overconfidence leads to excessive trading, bigger bets, and eventually bigger losses.",
     realExample: "Studies show that the most active traders typically underperform passive investors by 6-7% annually—largely due to overconfidence.",
@@ -334,6 +236,7 @@ export const beginnerMistakes = [
     name: "Not Diversifying",
     emoji: "🥚",
     saying: "Putting All Eggs In One Basket",
+    learnMoreUrl: "https://www.investopedia.com/terms/d/diversification.asp",
     mistake: "Investing everything in one stock, sector, or asset class because you're confident it will win.",
     whyItHappens: "Concentration feels exciting. Diversification feels boring. We overestimate our ability to pick winners.",
     consequence: "One bad pick can devastate your entire portfolio. Even great companies can fail unexpectedly.",
@@ -355,6 +258,7 @@ export const beginnerMistakes = [
     name: "Timing The Market",
     emoji: "⏰",
     saying: "I'll Buy When It Drops More",
+    learnMoreUrl: "https://www.investopedia.com/terms/m/markettiming.asp",
     mistake: "Waiting for the 'perfect' entry point or trying to predict short-term market movements.",
     whyItHappens: "We think we can outsmart the market. But markets are unpredictable in the short term.",
     consequence: "While waiting for a dip, you miss gains. Missing just the 10 best days in a decade can halve your returns.",
@@ -376,6 +280,7 @@ export const beginnerMistakes = [
     name: "Emotional Trading",
     emoji: "🎭",
     saying: "Panic Selling & Euphoria Buying",
+    learnMoreUrl: "https://www.investopedia.com/articles/basics/04/050704.asp",
     mistake: "Making investment decisions based on fear, greed, or excitement rather than logic.",
     whyItHappens: "Markets trigger strong emotions. Red days feel terrifying. Green days feel euphoric.",
     consequence: "Emotional traders buy at peaks (excitement) and sell at bottoms (fear)—the opposite of 'buy low, sell high.'",
@@ -397,6 +302,7 @@ export const beginnerMistakes = [
     name: "Ignoring Fees",
     emoji: "💸",
     saying: "It's Just 1%...",
+    learnMoreUrl: "https://www.investopedia.com/terms/e/expenseratio.asp",
     mistake: "Overlooking expense ratios, trading fees, and advisory fees because they seem small.",
     whyItHappens: "1-2% sounds trivial when you're focused on potential gains of 10%+.",
     consequence: "Over decades, fees compound dramatically. A 1% annual fee can cost you 25%+ of your final portfolio value over 30 years.",
@@ -418,6 +324,7 @@ export const beginnerMistakes = [
     name: "Investing Money You Need",
     emoji: "🚨",
     saying: "I Can Always Sell If I Need It",
+    learnMoreUrl: "https://www.investopedia.com/terms/e/emergency_fund.asp",
     mistake: "Investing your emergency fund or money you'll need within 1-3 years.",
     whyItHappens: "Keeping cash feels like 'wasting' potential returns.",
     consequence: "Markets often drop when emergencies cluster (recessions = job losses). You're forced to sell at the worst time.",

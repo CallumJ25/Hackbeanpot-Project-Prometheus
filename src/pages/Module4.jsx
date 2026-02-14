@@ -16,17 +16,17 @@ function Module4({ onQuizComplete, soundEnabled, quizScores }) {
   const allAnswered = answeredCount >= beginnerMistakes.length;
 
   return (
-    <div className="min-h-screen bg-slate-900 pt-20 pb-32 md:pb-12">
+    <div className="min-h-screen bg-cream pt-20 pb-32 md:pb-12">
       <div className="container mx-auto px-6">
         <FadeInSection>
           <div className="text-center mb-16">
             <span className="inline-block bg-coral/10 text-coral px-4 py-1 rounded-full text-sm font-semibold mb-4">
               Module 4
             </span>
-            <h1 className="font-display text-3xl md:text-5xl font-bold text-cream mb-4">
+            <h1 className="font-display text-3xl md:text-5xl font-bold text-navy mb-4">
               Common Beginner Mistakes
             </h1>
-            <p className="text-xl text-cream max-w-2xl mx-auto">
+            <p className="text-xl text-navy-light max-w-2xl mx-auto">
               Learn from others' expensive lessons.
             </p>
           </div>
@@ -85,6 +85,7 @@ function Module4({ onQuizComplete, soundEnabled, quizScores }) {
                     soundEnabled={soundEnabled}
                     answered={isAnswered}
                     wasCorrect={wasCorrect}
+                    learnMoreUrl={mistake.learnMoreUrl}
                   />
                 </div>
               </FadeInSection>

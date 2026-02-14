@@ -16,6 +16,7 @@ const StockSimulation = () => {
   const [config, setConfig] = useState({
     year: SIMULATION_CONFIG.defaultYear,
     investment: SIMULATION_CONFIG.defaultInvestment,
+    customInvestment: '',
     numCategories: 3,
     stocksPerCategory: 2,
     investmentStrategy: 'lump',
@@ -329,13 +330,13 @@ const StockSimulation = () => {
 
             <div>
               <label className="block text-navy font-medium mb-2">Investment Amount</label>
-              <div className="flex flex-wrap gap-2">
-                {[1000, 5000, 10000, 25000, 50000].map(amount => (
+              <div className="flex gap-1 md:gap-2 mb-3">
+                {[50, 100, 500, 1000, 5000, 10000, 50000].map(amount => (
                   <button
                     key={amount}
-                    onClick={() => setConfig({ ...config, investment: amount })}
-                    className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                      config.investment === amount 
+                    onClick={() => setConfig({ ...config, investment: amount, customInvestment: '' })}
+                    className={`px-2 md:px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                      config.investment === amount && !config.customInvestment
                         ? 'bg-teal text-white' 
                         : 'bg-cream-dark text-navy hover:bg-teal/20'
                     }`}
@@ -343,6 +344,40 @@ const StockSimulation = () => {
                     ${amount.toLocaleString()}
                   </button>
                 ))}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-navy-light text-sm">Custom:</span>
+                <div className="relative flex-1 max-w-[200px]">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-navy">$</span>
+                  <input
+                    type="text"
+                    placeholder="Enter amount"
+                    value={config.customInvestment || ''}
+                    onChange={(e) => {
+                      // Remove non-digits, then format with commas
+                      const rawValue = e.target.value.replace(/[^\d]/g, '');
+                      const numValue = parseInt(rawValue) || 0;
+                      
+                      // Enforce min/max
+                      if (numValue > 1000000) return;
+                      
+                      // Format with commas
+                      const formatted = numValue > 0 ? numValue.toLocaleString() : '';
+                      
+                      setConfig({ 
+                        ...config, 
+                        customInvestment: formatted,
+                        investment: numValue >= 50 ? numValue : config.investment
+                      });
+                    }}
+                    className={`w-full p-2 pl-7 rounded-lg border-2 text-navy font-medium focus:outline-none ${
+                      config.customInvestment 
+                        ? 'border-teal bg-teal/10' 
+                        : 'border-cream-dark bg-white'
+                    }`}
+                  />
+                </div>
+                <span className="text-navy-light text-xs">($50 - $1,000,000)</span>
               </div>
             </div>
 
@@ -424,9 +459,14 @@ const StockSimulation = () => {
 
             <button
               onClick={handleConfigSubmit}
-              className="w-full bg-teal text-white py-3 rounded-xl font-semibold hover:bg-teal-light transition-colors"
+              disabled={config.investment < 50}
+              className={`w-full py-3 rounded-xl font-semibold transition-colors ${
+                config.investment >= 50
+                  ? 'bg-teal text-white hover:bg-teal-light'
+                  : 'bg-cream-dark text-navy-light cursor-not-allowed'
+              }`}
             >
-              Continue
+              {config.investment < 50 ? 'Minimum investment is $50' : 'Continue'}
             </button>
           </div>
         </div>
@@ -867,6 +907,7 @@ const StockSimulation = () => {
               setCurrentCategoryIndex(0);
               setSearchQuery('');
               setFilters({ peMin: '', peMax: '', betaMin: '', betaMax: '', dividendMin: '', dividendMax: '' });
+              setConfig(prev => ({ ...prev, customInvestment: '' }));
             }}
             className="bg-navy text-white px-8 py-3 rounded-xl font-semibold hover:bg-navy-light transition-colors"
           >

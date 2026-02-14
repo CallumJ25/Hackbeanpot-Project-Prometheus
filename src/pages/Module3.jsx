@@ -1,40 +1,40 @@
 import { FadeInSection, Quiz } from '../components';
-import { psychologyTopics } from '../educationalData';
+import { beginnerMistakes } from '../educationalData';
 import { PageNavigation } from '../PageLayout';
 
 function Module3({ onQuizComplete, soundEnabled, quizScores }) {
   const getAnsweredCount = () => {
     let count = 0;
-    for (let i = 0; i < psychologyTopics.length; i++) {
-      if (quizScores[`psych-${i}`] !== undefined) count++;
+    for (let i = 0; i < beginnerMistakes.length; i++) {
+      if (quizScores[`mistake-${i}`] !== undefined) count++;
       else break;
     }
     return count;
   };
 
   const answeredCount = getAnsweredCount();
-  const allAnswered = answeredCount >= psychologyTopics.length;
+  const allAnswered = answeredCount >= beginnerMistakes.length;
 
   return (
-    <div className="min-h-screen bg-navy text-cream pt-20 pb-32 md:pb-12">
+    <div className="min-h-screen bg-cream pt-20 pb-32 md:pb-12">
       <div className="container mx-auto px-6">
         <FadeInSection>
           <div className="text-center mb-16">
-            <span className="inline-block bg-cream/10 text-cream px-4 py-1 rounded-full text-sm font-semibold mb-4">
+            <span className="inline-block bg-coral/10 text-coral px-4 py-1 rounded-full text-sm font-semibold mb-4">
               Module 3
             </span>
-            <h1 className="font-display text-3xl md:text-5xl font-bold mb-4">
-              Investor Psychology
+            <h1 className="font-display text-3xl md:text-5xl font-bold text-navy mb-4">
+              Common Beginner Mistakes
             </h1>
-            <p className="text-xl text-cream/80 max-w-2xl mx-auto">
-              Your brain is wired to make bad investment decisions. Here's why.
+            <p className="text-xl text-navy-light max-w-2xl mx-auto">
+              Learn from others' expensive lessons.
             </p>
           </div>
         </FadeInSection>
 
         <div className="max-w-4xl mx-auto space-y-12">
-          {psychologyTopics.map((topic, index) => {
-            const quizId = `psych-${index}`;
+          {beginnerMistakes.map((mistake, index) => {
+            const quizId = `mistake-${index}`;
             const isAnswered = quizScores[quizId] !== undefined;
             const isVisible = index <= answeredCount;
             const wasCorrect = quizScores[quizId] === true;
@@ -43,57 +43,62 @@ function Module3({ onQuizComplete, soundEnabled, quizScores }) {
 
             return (
               <FadeInSection key={index} delay={0.1}>
-                <div className="bg-navy-light/50 rounded-2xl p-6 md:p-10">
-                  <div className="flex items-center gap-3 mb-4">
-                    <span className="text-4xl">{topic.emoji}</span>
+                <div className="bg-white rounded-2xl p-6 md:p-10 shadow-lg border-l-4 border-coral">
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="text-3xl">{mistake.emoji}</span>
                     <div>
-                      <h3 className="font-display text-2xl font-bold">{topic.name}</h3>
-                      <p className="text-cream/70">{topic.fullName}</p>
+                      <h3 className="font-display text-2xl font-bold text-navy">{mistake.name}</h3>
+                      <p className="text-navy-light italic">"{mistake.saying}"</p>
                     </div>
                   </div>
                   
-                  <div className="bg-navy/50 rounded-xl p-4 mb-6">
-                    <p className="text-cream/90 italic">"{topic.scenario}"</p>
+                  <div className="space-y-4 my-6">
+                    <div className="bg-coral/10 rounded-xl p-4">
+                      <span className="font-semibold text-coral">The mistake:</span>
+                      <p className="text-navy mt-1">{mistake.mistake}</p>
+                    </div>
+                    
+                    <div>
+                      <span className="font-semibold text-navy">Why it happens:</span>
+                      <p className="text-navy-light mt-1">{mistake.whyItHappens}</p>
+                    </div>
+                    
+                    <div>
+                      <span className="font-semibold text-navy">The consequence:</span>
+                      <p className="text-navy-light mt-1">{mistake.consequence}</p>
+                    </div>
+                    
+                    <div className="bg-amber/10 rounded-xl p-4">
+                      <span className="font-semibold text-amber">Real example:</span>
+                      <p className="text-navy mt-1">{mistake.realExample}</p>
+                    </div>
+                    
+                    <div className="bg-sage/10 rounded-xl p-4">
+                      <span className="font-semibold text-sage">The solution:</span>
+                      <p className="text-navy mt-1">{mistake.solution}</p>
+                    </div>
                   </div>
 
-                  <div className="space-y-4 mb-6">
-                    <div>
-                      <span className="text-coral font-semibold">The danger:</span>
-                      <p className="text-cream/80 mt-1">{topic.danger}</p>
-                    </div>
-                    <div>
-                      <span className="text-teal-light font-semibold">Real example:</span>
-                      <p className="text-cream/80 mt-1">{topic.realExample}</p>
-                    </div>
-                    <div>
-                      <span className="text-sage font-semibold">The antidote:</span>
-                      <p className="text-cream/80 mt-1">{topic.antidote}</p>
-                    </div>
-                  </div>
-
-                  <div className="bg-white rounded-2xl p-6 md:p-8">
-                    <Quiz 
-                      quiz={topic.quiz} 
-                      onComplete={(correct) => onQuizComplete(quizId, correct)}
-                      soundEnabled={soundEnabled}
-                      answered={isAnswered}
-                      wasCorrect={wasCorrect}
-                    />
-                  </div>
+                  <Quiz 
+                    quiz={mistake.quiz} 
+                    onComplete={(correct) => onQuizComplete(quizId, correct)}
+                    soundEnabled={soundEnabled}
+                    answered={isAnswered}
+                    wasCorrect={wasCorrect}
+                    learnMoreUrl={mistake.learnMoreUrl}
+                  />
                 </div>
               </FadeInSection>
             );
           })}
 
-          <div className="pt-8">
-            <PageNavigation 
-              prevPath="/module/2" 
-              prevLabel="Key Metrics"
-              nextPath="/module/4" 
-              nextLabel="Common Mistakes"
-              nextDisabled={!allAnswered}
-            />
-          </div>
+          <PageNavigation 
+            prevPath="/module/2" 
+            prevLabel="Psychology"
+            nextPath="/simulation" 
+            nextLabel="Try the Simulation"
+            nextDisabled={!allAnswered}
+          />
         </div>
       </div>
     </div>
