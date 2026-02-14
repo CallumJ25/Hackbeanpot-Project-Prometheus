@@ -4,75 +4,28 @@
 
 ## Quick Start
 
-### 1. Install Node.js
-Download and install from [nodejs.org](https://nodejs.org/) (LTS version recommended)
+1. Install Node.js from [nodejs.org](https://nodejs.org/)
+2. Open terminal in this folder
+3. Run: `npm install --legacy-peer-deps`
+4. Run: `npm run dev`
+5. Open: `http://localhost:5173`
 
-### 2. Install dependencies
-Open a terminal in this folder and run:
-```bash
-npm install
-```
+## Pages
 
-### 3. Start the dev server
-```bash
-npm run dev
-```
+| Page | Route |
+|------|-------|
+| Home | `/` |
+| Module 1 - Chart Reading | `/module/1` |
+| Module 2 - Key Metrics | `/module/2` |
+| Module 3 - Psychology | `/module/3` |
+| Module 4 - Mistakes | `/module/4` |
+| Simulation | `/simulation` |
+| Conclusion | `/conclusion` |
 
-### 4. Open in browser
-Go to `http://localhost:5173`
+## Deploy
 
-That's it! The page will auto-refresh when you save changes.
-
----
-
-## Project Structure
-
-```
-project-prometheus/
-├── index.html              # Entry HTML
-├── package.json            # Dependencies
-├── vite.config.js          # Vite config
-├── tailwind.config.js      # Tailwind config
-├── postcss.config.js       # PostCSS config
-└── src/
-    ├── main.jsx            # App entry point
-    ├── App.jsx             # Main component
-    ├── index.css           # Styles + Tailwind
-    ├── config.js           # Constants
-    ├── stockData.js        # Stock data
-    ├── educationalData.js  # Quizzes & lessons
-    ├── utils.js            # Sound & storage
-    ├── components.jsx      # UI components
-    └── StockSimulation.jsx # Simulation game
-```
-
-## Commands
-
-| Command | What it does |
-|---------|--------------|
-| `npm run dev` | Start dev server with hot reload |
-| `npm run build` | Build for production |
-| `npm run preview` | Preview production build |
-
-## VS Code Extensions (Recommended)
-
-- **ES7+ React/Redux/React-Native snippets** - React shortcuts
-- **Tailwind CSS IntelliSense** - Tailwind autocomplete
-- **Prettier** - Code formatting
-
-## Deploying
-
-Build for production:
 ```bash
 npm run build
 ```
 
-This creates a `dist/` folder you can deploy to:
-- GitHub Pages
-- Netlify
-- Vercel
-- Any static hosting
-
----
-
-**Made with ❤️ for financial literacy**
+Deploy the `dist/` folder to Vercel, Netlify, or GitHub Pages.

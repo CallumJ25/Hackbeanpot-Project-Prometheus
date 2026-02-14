@@ -1,3 +1,79 @@
+// ==================== CHART LESSONS (no candlesticks) ====================
+export const chartLessons = [
+  {
+    name: "Volume",
+    emoji: "📊",
+    title: "Understanding Volume",
+    description: "Volume shows how many shares were traded. It helps confirm the strength of price movements.",
+    learnMoreUrl: "https://www.investopedia.com/terms/v/volume.asp",
+    points: [
+      { term: "High volume + price move", description: "Strong conviction—move is more likely to continue" },
+      { term: "Low volume + price move", description: "Weak conviction—move might reverse" },
+      { term: "Volume spikes", description: "Something significant happened (news, earnings, etc.)" }
+    ],
+    insight: "Think of volume as the 'confidence' behind a price move. A breakout on high volume is more meaningful than one on low volume.",
+    quiz: {
+      question: "A stock breaks above its all-time high on volume 5x higher than average. What does this suggest?",
+      options: [
+        "The breakout will definitely continue",
+        "Strong conviction—breakout more likely to hold",
+        "The stock is being manipulated",
+        "Volume doesn't matter for breakouts"
+      ],
+      correct: 1,
+      explanation: "High volume on a breakout suggests strong buyer conviction. Not a guarantee, but a positive sign."
+    }
+  },
+  {
+    name: "Trends",
+    emoji: "📈",
+    title: "Identifying Trends",
+    description: "Trends show the general direction. 'The trend is your friend'—it's generally easier to profit going with the trend than against it.",
+    learnMoreUrl: "https://www.investopedia.com/terms/t/trend.asp",
+    points: [
+      { term: "Uptrend", description: "Higher highs AND higher lows over time" },
+      { term: "Downtrend", description: "Lower highs AND lower lows over time" },
+      { term: "Sideways/Range", description: "Price bouncing between levels, no clear direction" }
+    ],
+    insight: "Trying to catch falling knives (buying during downtrends) or shorting rockets (betting against uptrends) is risky. Waiting for trend changes is often smarter.",
+    quiz: {
+      question: "A stock makes a new high of $50, pulls back to $45, then makes a new high of $55, pulls back to $48. What's the trend?",
+      options: [
+        "Downtrend—it keeps falling from highs",
+        "Uptrend—higher highs ($50→$55) and higher lows ($45→$48)",
+        "Sideways—it's just bouncing around",
+        "Can't determine from this information"
+      ],
+      correct: 1,
+      explanation: "Higher highs (50→55) AND higher lows (45→48) = uptrend. Both conditions must be met."
+    }
+  },
+  {
+    name: "Support & Resistance",
+    emoji: "🧱",
+    title: "Support & Resistance Levels",
+    description: "These are price levels where buying or selling pressure tends to emerge, causing price to bounce or stall.",
+    learnMoreUrl: "https://www.investopedia.com/trading/support-and-resistance-basics/",
+    points: [
+      { term: "Support", description: "A floor where buyers step in, preventing further drops" },
+      { term: "Resistance", description: "A ceiling where sellers emerge, preventing further rises" },
+      { term: "Role reversal", description: "Broken resistance becomes support, broken support becomes resistance" }
+    ],
+    insight: "These levels aren't magic—they're zones where many traders placed orders. The more times a level holds, the more significant it becomes.",
+    quiz: {
+      question: "A stock has bounced off $40 three times over six months. It's now at $42. What is $40?",
+      options: [
+        "Resistance—it can't break above",
+        "Support—buyers defend this level",
+        "Neither—three times isn't significant",
+        "A price target"
+      ],
+      correct: 1,
+      explanation: "$40 is support—a level where buyers consistently step in. The more touches without breaking, the stronger the support."
+    }
+  }
+];
+
 // ==================== FINANCIAL METRICS ====================
 export const metrics = [
   {
@@ -357,107 +433,6 @@ export const beginnerMistakes = [
       ],
       correct: 1,
       explanation: "Keep money you might need soon in savings. Invest only what you can truly leave alone for years."
-    }
-  }
-];
-
-// ==================== CHART LESSONS ====================
-export const chartLessons = [
-  {
-    name: "Candlesticks",
-    emoji: "🕯️",
-    title: "Reading Candlestick Charts",
-    description: "Each candlestick represents price movement over a time period (a day, hour, etc.). They show you four key prices at a glance.",
-    learnMoreUrl: "https://www.investopedia.com/trading/candlestick-charting-what-is-it/",
-    points: [
-      { term: "Body", description: "The thick part shows opening and closing prices" },
-      { term: "Green/White candle", description: "Price went up (closed higher than opened)" },
-      { term: "Red/Black candle", description: "Price went down (closed lower than opened)" },
-      { term: "Wicks/Shadows", description: "The thin lines show the high and low prices reached" }
-    ],
-    insight: "Long wicks suggest the price tested a level but couldn't hold it. Long bodies suggest strong movement in one direction.",
-    quiz: {
-      question: "You see a candle with a tiny body but very long upper wick. What happened during that period?",
-      options: [
-        "Price went up strongly all day",
-        "Price spiked high but sellers pushed it back down",
-        "Price barely moved",
-        "There was very little trading volume"
-      ],
-      correct: 1,
-      explanation: "A long upper wick with small body means price went up but couldn't stay there—sellers overwhelmed buyers."
-    }
-  },
-  {
-    name: "Volume",
-    emoji: "📊",
-    title: "Understanding Volume",
-    description: "Volume shows how many shares were traded. It helps confirm the strength of price movements.",
-    learnMoreUrl: "https://www.investopedia.com/terms/v/volume.asp",
-    points: [
-      { term: "High volume + price move", description: "Strong conviction—move is more likely to continue" },
-      { term: "Low volume + price move", description: "Weak conviction—move might reverse" },
-      { term: "Volume spikes", description: "Something significant happened (news, earnings, etc.)" }
-    ],
-    insight: "Think of volume as the 'confidence' behind a price move. A breakout on high volume is more meaningful than one on low volume.",
-    quiz: {
-      question: "A stock breaks above its all-time high on volume 5x higher than average. What does this suggest?",
-      options: [
-        "The breakout will definitely continue",
-        "Strong conviction—breakout more likely to hold",
-        "The stock is being manipulated",
-        "Volume doesn't matter for breakouts"
-      ],
-      correct: 1,
-      explanation: "High volume on a breakout suggests strong buyer conviction. Not a guarantee, but a positive sign."
-    }
-  },
-  {
-    name: "Trends",
-    emoji: "📈",
-    title: "Identifying Trends",
-    description: "Trends show the general direction. 'The trend is your friend'—it's generally easier to profit going with the trend than against it.",
-    learnMoreUrl: "https://www.investopedia.com/terms/t/trend.asp",
-    points: [
-      { term: "Uptrend", description: "Higher highs AND higher lows over time" },
-      { term: "Downtrend", description: "Lower highs AND lower lows over time" },
-      { term: "Sideways/Range", description: "Price bouncing between levels, no clear direction" }
-    ],
-    insight: "Trying to catch falling knives (buying during downtrends) or shorting rockets (betting against uptrends) is risky. Waiting for trend changes is often smarter.",
-    quiz: {
-      question: "A stock makes a new high of $50, pulls back to $45, then makes a new high of $55, pulls back to $48. What's the trend?",
-      options: [
-        "Downtrend—it keeps falling from highs",
-        "Uptrend—higher highs ($50→$55) and higher lows ($45→$48)",
-        "Sideways—it's just bouncing around",
-        "Can't determine from this information"
-      ],
-      correct: 1,
-      explanation: "Higher highs (50→55) AND higher lows (45→48) = uptrend. Both conditions must be met."
-    }
-  },
-  {
-    name: "Support & Resistance",
-    emoji: "🧱",
-    title: "Support & Resistance Levels",
-    description: "These are price levels where buying or selling pressure tends to emerge, causing price to bounce or stall.",
-    learnMoreUrl: "https://www.investopedia.com/trading/support-and-resistance-basics/",
-    points: [
-      { term: "Support", description: "A floor where buyers step in, preventing further drops" },
-      { term: "Resistance", description: "A ceiling where sellers emerge, preventing further rises" },
-      { term: "Role reversal", description: "Broken resistance becomes support, broken support becomes resistance" }
-    ],
-    insight: "These levels aren't magic—they're zones where many traders placed orders. The more times a level holds, the more significant it becomes.",
-    quiz: {
-      question: "A stock has bounced off $40 three times over six months. It's now at $42. What is $40?",
-      options: [
-        "Resistance—it can't break above",
-        "Support—buyers defend this level",
-        "Neither—three times isn't significant",
-        "A price target"
-      ],
-      correct: 1,
-      explanation: "$40 is support—a level where buyers consistently step in. The more touches without breaking, the stronger the support."
     }
   }
 ];

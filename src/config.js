@@ -1,12 +1,10 @@
-// ==================== SIMULATION CONFIGURATION ====================
 export const SIMULATION_CONFIG = {
   availableYears: [2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026],
   defaultYear: 2020,
   defaultInvestment: 10000,
-  bankInterestRate: 0.045, // 4.5% APY
+  bankInterestRate: 0.045,
 };
 
-// ==================== STOCK CATEGORIES ====================
 export const CATEGORIES = [
   { id: 'tech', name: 'Technology', icon: '💻' },
   { id: 'healthcare', name: 'Healthcare', icon: '🏥' },
@@ -16,56 +14,6 @@ export const CATEGORIES = [
   { id: 'industrial', name: 'Industrial', icon: '🏭' },
 ];
 
-// ==================== CANDLESTICK PATTERNS ====================
-export const CANDLE_PATTERNS = [
-  { 
-    name: 'Doji', 
-    description: 'Indecision - open and close nearly equal', 
-    detect: (c) => Math.abs(c.close - c.open) < (c.high - c.low) * 0.1 && (c.high - c.low) > 0 
-  },
-  { 
-    name: 'Hammer', 
-    description: 'Potential bullish reversal - small body, long lower wick', 
-    detect: (c) => {
-      const body = Math.abs(c.close - c.open);
-      const lowerWick = Math.min(c.open, c.close) - c.low;
-      const upperWick = c.high - Math.max(c.open, c.close);
-      return body > 0 && lowerWick > body * 2 && upperWick < body * 0.5;
-    }
-  },
-  { 
-    name: 'Shooting Star', 
-    description: 'Potential bearish reversal - small body, long upper wick', 
-    detect: (c) => {
-      const body = Math.abs(c.close - c.open);
-      const upperWick = c.high - Math.max(c.open, c.close);
-      const lowerWick = Math.min(c.open, c.close) - c.low;
-      return body > 0 && upperWick > body * 2 && lowerWick < body * 0.5;
-    }
-  },
-  { 
-    name: 'Marubozu', 
-    description: 'Strong conviction - full body, minimal wicks', 
-    detect: (c) => {
-      const body = Math.abs(c.close - c.open);
-      const range = c.high - c.low;
-      return range > 0 && body > range * 0.85;
-    }
-  },
-  { 
-    name: 'Spinning Top', 
-    description: 'Indecision - small body, equal wicks', 
-    detect: (c) => {
-      const body = Math.abs(c.close - c.open);
-      const range = c.high - c.low;
-      const upperWick = c.high - Math.max(c.open, c.close);
-      const lowerWick = Math.min(c.open, c.close) - c.low;
-      return range > 0 && body < range * 0.3 && Math.abs(upperWick - lowerWick) < range * 0.2;
-    }
-  },
-];
-
-// ==================== S&P 500 BENCHMARK DATA ====================
 export const SP500_DATA = {
   2000: { start: 1469.25, now: 5950.25 },
   2001: { start: 1320.28, now: 5950.25 },
@@ -96,7 +44,6 @@ export const SP500_DATA = {
   2026: { start: 5950.25, now: 5950.25 },
 };
 
-// ==================== FUN PURCHASE COMPARISONS ====================
 export const FUN_PURCHASES = [
   { name: 'cups of coffee', unitPrice: 5.50, icon: '☕' },
   { name: 'Netflix subscriptions (monthly)', unitPrice: 15.49, icon: '📺' },

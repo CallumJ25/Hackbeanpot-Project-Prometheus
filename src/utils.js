@@ -1,4 +1,3 @@
-// ==================== SOUND EFFECTS ====================
 export const SoundEffects = {
   correct: () => {
     try {
@@ -37,7 +36,6 @@ export const SoundEffects = {
   }
 };
 
-// ==================== LOCAL STORAGE HELPERS ====================
 export const Storage = {
   save: (key, data) => {
     try { 
