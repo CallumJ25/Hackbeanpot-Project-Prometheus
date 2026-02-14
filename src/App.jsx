@@ -10,6 +10,7 @@ import {
   CandlestickBuilder 
 } from './components';
 import StockSimulation from './StockSimulation';
+import Animation from './Animation';
 
 function App() {
   const [currentSection, setCurrentSection] = useState('hero');
@@ -68,7 +69,7 @@ function App() {
     }
   };
 
-  const resetProgress = () => {
+  const resetProgress = () => {text-cream/80
     setQuizScores({});
     setTotalCorrect(0);
     setTotalAnswered(0);
@@ -80,7 +81,7 @@ function App() {
   const totalQuizzes = metrics.length + psychologyTopics.length + beginnerMistakes.length + chartLessons.length;
 
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen bg-slate-900">
       <ProgressBar current={totalAnswered} total={totalQuizzes} />
       <Navigation sections={sections} currentSection={currentSection} />
       
@@ -109,24 +110,33 @@ function App() {
           <div className="absolute top-20 left-10 w-72 h-72 bg-teal/20 rounded-full blur-3xl" />
           <div className="absolute bottom-20 right-10 w-96 h-96 bg-amber/20 rounded-full blur-3xl" />
         </div>
-        
-        <div className="container mx-auto px-6 py-20 text-center relative z-10">
-          <FadeInSection>
-            <h2 className="font-display text-6xl md:text-8xl lg:text-9xl font-bold text-navy tracking-tight mb-10">
-              Project Prometheus
-            </h2>
-          </FadeInSection>
-          
+
+        {/* Background column - 25% width */}
+        <div className="absolute left-0 top-0 w-1/4 min-h-screen bg-black z-0">
+          <Animation />
+        </div>
+
+        <div className="relative min-h-screen">
+          <div className="absolute left-0 top-1/2 z-10" style={{ transform: 'translateY(-50%) translateX(-30%) rotate(-90deg)', transformOrigin: 'center' }}>
+            <FadeInSection>
+              <h2 className="font-display text-[10vw] font-bold text-emerald-400 tracking-tight whitespace-nowrap">
+                Prometheus 
+              </h2>
+            </FadeInSection>
+          </div>
+        </div>
+
+        <div className="container mx-auto px-6 py-20 text-right relative z-10">
           <FadeInSection delay={0.2}>
-            <h1 className="font-display text-3xl md:text-5xl lg:text-6xl font-bold text-navy mb-6 leading-tight">
+            <h1 className="font-display text-3xl md:text-5xl lg:text-6xl font-bold text-teal mb-6 leading-tight">
               Can we talk about the
-              <span className="block text-teal">financial and economic state</span>
+              <span className="block text-emerald-400">financial and economic state</span>
               of the world right now?
             </h1>
           </FadeInSection>
           
           <FadeInSection delay={0.4}>
-            <p className="text-xl md:text-2xl text-navy-light max-w-2xl mx-auto mb-12">
+            <p className="text-xl md:text-2xl text-cream max-w-2xl ml-auto mb-12 text-right">
               Knowledge shouldn't be a privilege.
             </p>
           </FadeInSection>
@@ -134,15 +144,15 @@ function App() {
           <FadeInSection delay={0.6}>
             <a 
               href="#problem"
-              className="inline-flex items-center gap-3 bg-navy text-cream px-8 py-4 rounded-full font-semibold text-lg hover:bg-navy-light transition-colors shadow-lg hover:shadow-xl"
+              className="inline-flex items-center gap-3 bg-teal text-cream px-8 py-4 rounded-full font-semibold text-lg hover:bg-emerald-400 transition-colors shadow-lg hover:shadow-xl"
             >
-              Get Started
+              Let's talk.
               <span className="text-xl">↓</span>
             </a>
           </FadeInSection>
 
           <FadeInSection delay={0.8}>
-            <div className="mt-20 flex flex-wrap justify-center gap-8 text-navy-light">
+            <div className="mt-20 flex flex-wrap justify-end gap-8 text-white">
               <div>4 Modules</div>
               <div>{totalQuizzes} Quizzes</div>
               <div>~30 min</div>
@@ -206,10 +216,10 @@ function App() {
                 <span className="inline-block bg-amber/10 text-amber px-4 py-1 rounded-full text-sm font-semibold mb-4">
                   Our Mission
                 </span>
-                <h2 className="font-display text-3xl md:text-5xl font-bold text-navy mb-4">
+                <h2 className="font-display text-3xl md:text-5xl font-bold text-cream/80 mb-4">
                   Democratizing Financial Literacy
                 </h2>
-                <p className="text-xl text-navy-light max-w-2xl mx-auto">
+                <p className="text-xl text-cream/80 max-w-2xl mx-auto">
                   Free, accessible education for anyone who wants to understand how money and markets work.
                 </p>
               </div>
@@ -318,10 +328,10 @@ function App() {
               <span className="inline-block bg-amber/10 text-amber px-4 py-1 rounded-full text-sm font-semibold mb-4">
                 Module 2
               </span>
-              <h2 className="font-display text-3xl md:text-5xl font-bold text-navy mb-4">
+              <h2 className="font-display text-3xl md:text-5xl font-bold text-cream/80">
                 Key Metrics
               </h2>
-              <p className="text-xl text-navy-light max-w-2xl mx-auto">
+              <p className="text-xl text-cream/80 max-w-2xl mx-auto">
                 Numbers that actually matter when evaluating a stock.
               </p>
             </div>
@@ -453,10 +463,10 @@ function App() {
               <span className="inline-block bg-coral/10 text-coral px-4 py-1 rounded-full text-sm font-semibold mb-4">
                 Module 4
               </span>
-              <h2 className="font-display text-3xl md:text-5xl font-bold text-navy mb-4">
+              <h2 className="font-display text-3xl md:text-5xl font-bold text-cream/80 mb-4">
                 Common Beginner Mistakes
               </h2>
-              <p className="text-xl text-navy-light max-w-2xl mx-auto">
+              <p className="text-xl text-cream/80 max-w-2xl mx-auto">
                 Learn from others' expensive lessons.
               </p>
             </div>
