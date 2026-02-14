@@ -69,7 +69,7 @@ function App() {
     }
   };
 
-  const resetProgress = () => {
+  const resetProgress = () => {text-cream/80
     setQuizScores({});
     setTotalCorrect(0);
     setTotalAnswered(0);
@@ -136,7 +136,7 @@ function App() {
           </FadeInSection>
           
           <FadeInSection delay={0.4}>
-            <p className="text-xl md:text-2xl text-teal max-w-2xl ml-auto mb-12 text-right">
+            <p className="text-xl md:text-2xl text-cream max-w-2xl ml-auto mb-12 text-right">
               Knowledge shouldn't be a privilege.
             </p>
           </FadeInSection>
@@ -144,9 +144,9 @@ function App() {
           <FadeInSection delay={0.6}>
             <a 
               href="#problem"
-              className="inline-flex items-center gap-3 bg-navy text-cream px-8 py-4 rounded-full font-semibold text-lg hover:bg-navy-light transition-colors shadow-lg hover:shadow-xl"
+              className="inline-flex items-center gap-3 bg-teal text-cream px-8 py-4 rounded-full font-semibold text-lg hover:bg-emerald-400 transition-colors shadow-lg hover:shadow-xl"
             >
-              Get Started
+              Let's talk.
               <span className="text-xl">↓</span>
             </a>
           </FadeInSection>
@@ -216,10 +216,10 @@ function App() {
                 <span className="inline-block bg-amber/10 text-amber px-4 py-1 rounded-full text-sm font-semibold mb-4">
                   Our Mission
                 </span>
-                <h2 className="font-display text-3xl md:text-5xl font-bold text-navy mb-4">
+                <h2 className="font-display text-3xl md:text-5xl font-bold text-cream/80 mb-4">
                   Democratizing Financial Literacy
                 </h2>
-                <p className="text-xl text-navy-light max-w-2xl mx-auto">
+                <p className="text-xl text-cream/80 max-w-2xl mx-auto">
                   Free, accessible education for anyone who wants to understand how money and markets work.
                 </p>
               </div>
@@ -328,10 +328,10 @@ function App() {
               <span className="inline-block bg-amber/10 text-amber px-4 py-1 rounded-full text-sm font-semibold mb-4">
                 Module 2
               </span>
-              <h2 className="font-display text-3xl md:text-5xl font-bold text-navy mb-4">
+              <h2 className="font-display text-3xl md:text-5xl font-bold text-cream/80">
                 Key Metrics
               </h2>
-              <p className="text-xl text-navy-light max-w-2xl mx-auto">
+              <p className="text-xl text-cream/80 max-w-2xl mx-auto">
                 Numbers that actually matter when evaluating a stock.
               </p>
             </div>
@@ -463,10 +463,10 @@ function App() {
               <span className="inline-block bg-coral/10 text-coral px-4 py-1 rounded-full text-sm font-semibold mb-4">
                 Module 4
               </span>
-              <h2 className="font-display text-3xl md:text-5xl font-bold text-navy mb-4">
+              <h2 className="font-display text-3xl md:text-5xl font-bold text-cream/80 mb-4">
                 Common Beginner Mistakes
               </h2>
-              <p className="text-xl text-navy-light max-w-2xl mx-auto">
+              <p className="text-xl text-cream/80 max-w-2xl mx-auto">
                 Learn from others' expensive lessons.
               </p>
             </div>

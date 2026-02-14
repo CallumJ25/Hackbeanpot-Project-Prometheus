@@ -132,8 +132,8 @@ export const Navigation = ({ sections, currentSection }) => (
           href={`#${section.id}`}
           className={`w-3 h-3 rounded-full transition-all ${
             currentSection === section.id 
-              ? 'bg-teal scale-125' 
-              : 'bg-navy/20 hover:bg-navy/40'
+              ? 'bg-emerald-400 scale-125' 
+              : 'bg-teal hover:bg-navy/40'
           }`}
           title={section.name}
         />
