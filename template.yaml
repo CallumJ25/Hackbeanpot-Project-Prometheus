@@ -8,7 +8,7 @@ Globals:
     Timeout: 30
   Api:
     Cors:
-      AllowMethods: "'GET,OPTIONS'"
+      AllowMethods: "'GET,POST,OPTIONS'"
       AllowHeaders: "'Content-Type'"
       AllowOrigin: "'*'"
 
@@ -27,3 +27,21 @@ Resources:
           Properties:
             Path: /stats
             Method: get
+
+  GeminiPromptFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/gemini_prompt/
+      Handler: app.lambda_handler
+      Runtime: python3.13
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          GEMINI_API_KEY: !Sub '{{resolve:ssm:/prometheus/GEMINI_API_KEY}}'
+      Events:
+        GeminiPrompt:
+          Type: Api
+          Properties:
+            Path: /gemini
+            Method: post
