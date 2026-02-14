@@ -23,8 +23,9 @@ htmlcov/
 .pytest_cache/
 .mypy_cache/
 
-# Claude
+# Claude / AI tools
 .claude/
+Roo-Code/
 
 # IDE
 .vscode/
