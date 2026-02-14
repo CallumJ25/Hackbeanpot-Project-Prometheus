@@ -90,7 +90,7 @@ function Conclusion({ totalCorrect, totalAnswered }) {
 
           <FadeInSection delay={0.7}>
             <div className="pt-12 border-t border-navy/10">
-              <p className="font-display text-2xl font-bold text-navy">Project Prometheus</p>
+              <p className="font-display text-2xl font-bold text-emerald-400">Prometheus</p>
               <p className="text-navy-light text-sm mt-2">Financial education for everyone.</p>
             </div>
           </FadeInSection>
