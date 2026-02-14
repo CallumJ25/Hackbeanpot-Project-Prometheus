@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { SIMULATION_CONFIG, CATEGORIES, SP500_DATA, FUN_PURCHASES } from './config';
+import { useState, useMemo, useEffect } from 'react';
+import { API_BASE_URL, SIMULATION_CONFIG, CATEGORIES, SP500_DATA, FUN_PURCHASES } from './config';
 import { STOCKS_DATA, SECTOR_NAMES } from './stockData';
 import { PortfolioChart } from './components';
 
@@ -24,6 +24,9 @@ const StockSimulation = () => {
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedStocks, setSelectedStocks] = useState({});
   const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({ peMin: '', peMax: '', betaMin: '', betaMax: '', dividendMin: '', dividendMax: '' });
 
   // Live stats from /stats lambda: { [ticker]: { pe, marketCap, beta } }
   const [liveStats, setLiveStats] = useState({});
@@ -34,43 +37,63 @@ const StockSimulation = () => {
   const [simulationLoading, setSimulationLoading] = useState(false);
   const [simulationError, setSimulationError] = useState(null);
 
-  const getAvailableStocks = () => {
-    const categoryId = selectedCategories[currentCategoryIndex];
-    const categoryData = STOCKS_DATA[categoryId];
-    if (!categoryData) return [];
-    return categoryData[config.year] || categoryData[2024] || [];
-  };
+  const getAvailableStocks = () => STOCKS_DATA[selectedCategories[currentCategoryIndex]] || [];
 
-  // Fetch /stats for all tickers in the current category (skip already cached)
+  // Fetch /stats for all tickers in the current category (skip already cached).
+  // Requests are batched (5 at a time) to avoid yfinance rate-limiting.
   useEffect(() => {
     if (step !== 'stocks') return;
     const stocks = getAvailableStocks();
     const uncached = stocks.map(s => s.ticker).filter(t => !liveStats[t]);
     if (!uncached.length) return;
 
-    setStatsLoading(true);
-    Promise.all(
-      uncached.map(ticker =>
-        fetch(`${API_BASE_URL}/stats?symbol=${ticker}`)
-          .then(r => r.json())
-          .then(data => ({ ticker, data }))
-          .catch(() => ({ ticker, data: null }))
-      )
-    ).then(results => {
-      const newStats = {};
-      results.forEach(({ ticker, data }) => {
-        if (data && !data.error) {
-          newStats[ticker] = {
-            pe: data.trailingPE ?? data.forwardPE ?? null,
-            eps: data.trailingEps ?? null,
-            marketCap: formatMarketCap(data.marketCap),
-            beta: data.beta ?? null,
-          };
+    const fetchOne = (ticker) =>
+      fetch(`${API_BASE_URL}/stats?symbol=${ticker}`)
+        .then(r => r.json())
+        .then(data => ({ ticker, data }))
+        .catch(() => ({ ticker, data: null }));
+
+    const processResult = ({ ticker, data }) => {
+      if (!data || data.error) return null;
+      const pe = data.trailingPE ?? data.forwardPE ?? null;
+      const eps = data.trailingEps ?? data.epsTrailingTwelveMonths ?? data.forwardEps ?? null;
+      const beta = data.beta ?? null;
+      let dividendYield = null;
+      if (data.dividendYield != null) {
+        const pct = +data.dividendYield.toFixed(2);
+        dividendYield = (pct >= 0 && pct <= 25) ? pct : null;
+      }
+      return [ticker, {
+        pe: (pe != null && pe > -1000 && pe < 10000) ? +pe.toFixed(1) : null,
+        eps: (eps != null && Math.abs(eps) < 10000) ? +eps.toFixed(2) : null,
+        marketCap: formatMarketCap(data.marketCap),
+        beta: (beta != null && beta > -10 && beta < 10) ? +beta.toFixed(2) : null,
+        dividendYield,
+      }];
+    };
+
+    const BATCH_SIZE = 5;
+    const runBatches = async () => {
+      setStatsLoading(true);
+      for (let i = 0; i < uncached.length; i += BATCH_SIZE) {
+        const batch = uncached.slice(i, i + BATCH_SIZE);
+        const results = await Promise.all(batch.map(fetchOne));
+        const newStats = {};
+        results.forEach(r => {
+          const entry = processResult(r);
+          if (entry) newStats[entry[0]] = entry[1];
+        });
+        if (Object.keys(newStats).length) {
+          setLiveStats(prev => ({ ...prev, ...newStats }));
         }
-      });
-      setLiveStats(prev => ({ ...prev, ...newStats }));
+        if (i + BATCH_SIZE < uncached.length) {
+          await new Promise(res => setTimeout(res, 300));
+        }
+      }
       setStatsLoading(false);
-    });
+    };
+
+    runBatches();
   }, [step, currentCategoryIndex]);
 
   const handleConfigSubmit = () => setStep('categories');
@@ -220,52 +243,59 @@ const StockSimulation = () => {
     };
   };
 
-  const getAvailableStocks = () => {
-    const categoryId = selectedCategories[currentCategoryIndex];
-    const categoryData = STOCKS_DATA[categoryId];
-    if (!categoryData) return [];
-    return categoryData[config.year] || categoryData[2024] || [];
-  };
-
-  // Filter and search stocks
+  // Filter and search stocks — numeric filters use liveStats since stockData has no metrics
   const filteredStocks = useMemo(() => {
     let stocks = getAvailableStocks();
-    
-    // Search filter
+
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      stocks = stocks.filter(s => 
-        s.ticker.toLowerCase().includes(query) || 
+      stocks = stocks.filter(s =>
+        s.ticker.toLowerCase().includes(query) ||
         s.name.toLowerCase().includes(query)
       );
     }
-    
-    // P/E filter
+
     if (filters.peMin !== '') {
-      stocks = stocks.filter(s => s.pe >= parseFloat(filters.peMin));
+      stocks = stocks.filter(s => {
+        const pe = liveStats[s.ticker]?.pe;
+        return pe != null && pe >= parseFloat(filters.peMin);
+      });
     }
     if (filters.peMax !== '') {
-      stocks = stocks.filter(s => s.pe <= parseFloat(filters.peMax));
+      stocks = stocks.filter(s => {
+        const pe = liveStats[s.ticker]?.pe;
+        return pe != null && pe <= parseFloat(filters.peMax);
+      });
     }
-    
-    // Beta filter
+
     if (filters.betaMin !== '') {
-      stocks = stocks.filter(s => s.beta >= parseFloat(filters.betaMin));
+      stocks = stocks.filter(s => {
+        const beta = liveStats[s.ticker]?.beta;
+        return beta != null && beta >= parseFloat(filters.betaMin);
+      });
     }
     if (filters.betaMax !== '') {
-      stocks = stocks.filter(s => s.beta <= parseFloat(filters.betaMax));
+      stocks = stocks.filter(s => {
+        const beta = liveStats[s.ticker]?.beta;
+        return beta != null && beta <= parseFloat(filters.betaMax);
+      });
     }
-    
-    // Dividend filter
+
     if (filters.dividendMin !== '') {
-      stocks = stocks.filter(s => s.dividendYield >= parseFloat(filters.dividendMin));
+      stocks = stocks.filter(s => {
+        const div = liveStats[s.ticker]?.dividendYield;
+        return div != null && div >= parseFloat(filters.dividendMin);
+      });
     }
     if (filters.dividendMax !== '') {
-      stocks = stocks.filter(s => s.dividendYield <= parseFloat(filters.dividendMax));
+      stocks = stocks.filter(s => {
+        const div = liveStats[s.ticker]?.dividendYield;
+        return div != null && div <= parseFloat(filters.dividendMax);
+      });
     }
-    
+
     return stocks;
-  }, [currentCategoryIndex, selectedCategories, config.year, searchQuery, filters]);
+  }, [currentCategoryIndex, selectedCategories, config.year, searchQuery, filters, liveStats]);
 
   const clearFilters = () => {
     setSearchQuery('');
@@ -632,26 +662,34 @@ const StockSimulation = () => {
                         <span className="text-navy-light ml-2 text-sm truncate">{stock.name}</span>
                       </div>
                       <div className="flex flex-wrap gap-3 text-xs md:text-sm">
-                        <div className="bg-cream px-2 py-1 rounded">
-                          <span className="text-navy-light">Price: </span>
-                          <span className="font-semibold text-navy">${stock.priceStart.toFixed(2)}</span>
-                        </div>
-                        <div className="bg-cream px-2 py-1 rounded">
-                          <span className="text-navy-light">P/E: </span>
-                          <span className="font-semibold text-navy">{stock.pe}</span>
-                        </div>
-                        <div className="bg-cream px-2 py-1 rounded">
-                          <span className="text-navy-light">Beta: </span>
-                          <span className="font-semibold text-navy">{stock.beta}</span>
-                        </div>
-                        <div className="bg-cream px-2 py-1 rounded">
-                          <span className="text-navy-light">Div: </span>
-                          <span className="font-semibold text-navy">{stock.dividendYield}%</span>
-                        </div>
-                        <div className="bg-cream px-2 py-1 rounded hidden md:block">
-                          <span className="text-navy-light">Cap: </span>
-                          <span className="font-semibold text-navy">{stock.marketCap}</span>
-                        </div>
+                        {statsLoading && !liveStats[stock.ticker] ? (
+                          <span className="text-navy-light animate-pulse">Loading stats...</span>
+                        ) : (() => {
+                          const live = liveStats[stock.ticker];
+                          const na = <span className="font-semibold text-navy-light">N/A</span>;
+                          return (<>
+                            <div className="bg-cream px-2 py-1 rounded">
+                              <span className="text-navy-light">P/E: </span>
+                              {live?.pe != null ? <span className="font-semibold text-navy">{live.pe}</span> : na}
+                            </div>
+                            <div className="bg-cream px-2 py-1 rounded">
+                              <span className="text-navy-light">EPS: </span>
+                              {live?.eps != null ? <span className="font-semibold text-navy">${live.eps}</span> : na}
+                            </div>
+                            <div className="bg-cream px-2 py-1 rounded">
+                              <span className="text-navy-light">Beta: </span>
+                              {live?.beta != null ? <span className="font-semibold text-navy">{live.beta}</span> : na}
+                            </div>
+                            <div className="bg-cream px-2 py-1 rounded">
+                              <span className="text-navy-light">Div: </span>
+                              {live?.dividendYield != null ? <span className="font-semibold text-navy">{live.dividendYield}%</span> : na}
+                            </div>
+                            <div className="bg-cream px-2 py-1 rounded hidden md:block">
+                              <span className="text-navy-light">Cap: </span>
+                              {live?.marketCap ? <span className="font-semibold text-navy">{live.marketCap}</span> : na}
+                            </div>
+                          </>);
+                        })()}
                       </div>
                     </div>
                   </button>
