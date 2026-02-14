@@ -1,6 +1,6 @@
 // ==================== API CONFIGURATION ====================
 // Deployed API Gateway URL - usage: fetch(`${API_BASE_URL}/stats?symbol=MSFT`)
-export const API_BASE_URL = "https://cuqm29daa5.execute-api.us-east-2.amazonaws.com/Prod";
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // ==================== SIMULATION CONFIGURATION ====================
 export const SIMULATION_CONFIG = {
