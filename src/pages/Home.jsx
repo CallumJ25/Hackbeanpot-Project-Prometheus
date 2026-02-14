@@ -141,7 +141,7 @@ function Home({ totalQuizzes }) {
                 <div className="bg-white rounded-2xl p-6 shadow-lg text-center">
                   <span className="text-4xl mb-4 block">📚</span>
                   <h3 className="font-display text-xl font-bold text-navy mb-2">Approachable</h3>
-                  <p className="text-navy-light">Plain language explanations. No finance degree required.</p>
+                  <p className="text-navy-light">For those unexperienced in finances. Plain language explanations.</p>
                 </div>
               </FadeInSection>
               
@@ -152,9 +152,29 @@ function Home({ totalQuizzes }) {
                   <p className="text-navy-light">We show you risks and limitations, not just opportunities.</p>
                 </div>
               </FadeInSection>
-
               
             </div>
+
+            <div className="container mx-auto px-6 py-20 text-center relative z-10">
+              <FadeInSection delay={0.6}>
+                <a 
+                  href="./module/1"
+                  className="inline-flex items-center gap-3 bg-teal text-cream px-8 py-4 rounded-full font-semibold text-lg text-center hover:bg-emerald-400 transition-colors shadow-lg hover:shadow-xl"
+                >
+                  Let's start.
+                  <span className="text-xl">💭</span>
+                </a>
+              </FadeInSection>
+            </div>
+
+            <FadeInSection delay={0.5}>
+              <div className="bg-amber/10 border-2 border-amber/30 rounded-2xl w-full p-6 shadow-lg text-center mt-0">
+                <p className="text-cream">
+                  <span className="font-semibold">⚠️ Reminder:</span> This is educational content, not financial advice. Do your own research and consider consulting a financial advisor.
+                </p>
+              </div>
+            </FadeInSection>
+
           </div>
         </div>
       </section>

@@ -1,21 +1,57 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SIMULATION_CONFIG, CATEGORIES, SP500_DATA, FUN_PURCHASES } from './config';
 import { STOCKS_DATA } from './stockData';
 import { PortfolioChart } from './components';
 
 const StockSimulation = () => {
-  const [step, setStep] = useState('setup');
-  const [config, setConfig] = useState({
-    year: SIMULATION_CONFIG.defaultYear,
-    investment: SIMULATION_CONFIG.defaultInvestment,
-    numCategories: 3,
-    stocksPerCategory: 2,
-    investmentStrategy: 'lump',
-    dcaMonthly: 500,
+  // Load saved state from localStorage
+  const [step, setStep] = useState(() => 
+    localStorage.getItem('sim_step') || 'setup'
+  );
+  const [config, setConfig] = useState(() => {
+    const saved = localStorage.getItem('sim_config');
+    return saved ? JSON.parse(saved) : {
+      year: SIMULATION_CONFIG.defaultYear,
+      investment: SIMULATION_CONFIG.defaultInvestment,
+      numCategories: 3,
+      stocksPerCategory: 2,
+      investmentStrategy: 'lump',
+      dcaMonthly: 500,
+    };
   });
-  const [selectedCategories, setSelectedCategories] = useState([]);
-  const [selectedStocks, setSelectedStocks] = useState({});
-  const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
+  const [selectedCategories, setSelectedCategories] = useState(() => {
+    const saved = localStorage.getItem('sim_categories');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [selectedStocks, setSelectedStocks] = useState(() => {
+    const saved = localStorage.getItem('sim_stocks');
+    return saved ? JSON.parse(saved) : {};
+  });
+  const [currentCategoryIndex, setCurrentCategoryIndex] = useState(() => {
+    const saved = localStorage.getItem('sim_categoryIndex');
+    return saved ? parseInt(saved) : 0;
+  });
+
+  // Save to localStorage whenever state changes
+  useEffect(() => {
+    localStorage.setItem('sim_step', step);
+  }, [step]);
+
+  useEffect(() => {
+    localStorage.setItem('sim_config', JSON.stringify(config));
+  }, [config]);
+
+  useEffect(() => {
+    localStorage.setItem('sim_categories', JSON.stringify(selectedCategories));
+  }, [selectedCategories]);
+
+  useEffect(() => {
+    localStorage.setItem('sim_stocks', JSON.stringify(selectedStocks));
+  }, [selectedStocks]);
+
+  useEffect(() => {
+    localStorage.setItem('sim_categoryIndex', currentCategoryIndex.toString());
+  }, [currentCategoryIndex]);
 
   const handleConfigSubmit = () => {
     setStep('categories');
@@ -57,6 +93,19 @@ const StockSimulation = () => {
     } else {
       setStep('results');
     }
+  };
+
+  const handleReset = () => {
+    setStep('setup');
+    setSelectedCategories([]);
+    setSelectedStocks({});
+    setCurrentCategoryIndex(0);
+    // Clear localStorage
+    localStorage.removeItem('sim_step');
+    localStorage.removeItem('sim_config');
+    localStorage.removeItem('sim_categories');
+    localStorage.removeItem('sim_stocks');
+    localStorage.removeItem('sim_categoryIndex');
   };
 
   const calculateResults = () => {
@@ -495,12 +544,7 @@ const StockSimulation = () => {
         {/* Try Again */}
         <div className="text-center">
           <button
-            onClick={() => {
-              setStep('setup');
-              setSelectedCategories([]);
-              setSelectedStocks({});
-              setCurrentCategoryIndex(0);
-            }}
+            onClick={handleReset}
             className="bg-navy text-white px-8 py-3 rounded-xl font-semibold hover:bg-navy-light transition-colors"
           >
             Try Different Picks
