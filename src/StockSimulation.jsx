@@ -12,65 +12,92 @@ function formatMarketCap(value) {
 }
 
 const StockSimulation = () => {
-  // Load saved state from localStorage
-  const [step, setStep] = useState(() => 
-    localStorage.getItem('sim_step') || 'setup'
-  );
-  const [config, setConfig] = useState(() => {
-    const saved = localStorage.getItem('sim_config');
-    return saved ? JSON.parse(saved) : {
-      year: SIMULATION_CONFIG.defaultYear,
-      investment: SIMULATION_CONFIG.defaultInvestment,
-      customInvestment: '',
-      numCategories: 3,
-      stocksPerCategory: 2,
-      investmentStrategy: 'lump',
-      dcaMonthly: 500,
-    };
+  const [step, setStep] = useState('setup');
+  const [config, setConfig] = useState({
+    year: SIMULATION_CONFIG.defaultYear,
+    investment: SIMULATION_CONFIG.defaultInvestment,
+    customInvestment: '',
+    numCategories: 3,
+    stocksPerCategory: 2,
+    investmentStrategy: 'lump',
+    dcaMonthly: 500,
   });
-  const [selectedCategories, setSelectedCategories] = useState(() => {
-    const saved = localStorage.getItem('sim_categories');
-    return saved ? JSON.parse(saved) : [];
-  });
-  const [selectedStocks, setSelectedStocks] = useState(() => {
-    const saved = localStorage.getItem('sim_stocks');
-    return saved ? JSON.parse(saved) : {};
-  });
-  const [currentCategoryIndex, setCurrentCategoryIndex] = useState(() => {
-    const saved = localStorage.getItem('sim_categoryIndex');
-    return saved ? parseInt(saved) : 0;
-  });
-  
-  // Search and filter state
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [selectedStocks, setSelectedStocks] = useState({});
+  const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({ peMin: '', peMax: '', betaMin: '', betaMax: '', dividendMin: '', dividendMax: '' });
 
-  // Save to localStorage whenever state changes
+  // Live stats from /stats lambda: { [ticker]: { pe, marketCap, beta } }
+  const [liveStats, setLiveStats] = useState({});
+  const [statsLoading, setStatsLoading] = useState(false);
+
+  // Simulation result from /simulate lambda
+  const [simulationResult, setSimulationResult] = useState(null);
+  const [simulationLoading, setSimulationLoading] = useState(false);
+  const [simulationError, setSimulationError] = useState(null);
+
+  const getAvailableStocks = () => STOCKS_DATA[selectedCategories[currentCategoryIndex]] || [];
+
+  // Fetch /stats for all tickers in the current category (skip already cached).
+  // Requests are batched (5 at a time) to avoid yfinance rate-limiting.
   useEffect(() => {
-    localStorage.setItem('sim_step', step);
-  }, [step]);
+    if (step !== 'stocks') return;
+    const stocks = getAvailableStocks();
+    const uncached = stocks.map(s => s.ticker).filter(t => !liveStats[t]);
+    if (!uncached.length) return;
 
-  useEffect(() => {
-    localStorage.setItem('sim_config', JSON.stringify(config));
-  }, [config]);
+    const fetchOne = (ticker) =>
+      fetch(`${API_BASE_URL}/stats?symbol=${ticker}`)
+        .then(r => r.json())
+        .then(data => ({ ticker, data }))
+        .catch(() => ({ ticker, data: null }));
 
-  useEffect(() => {
-    localStorage.setItem('sim_categories', JSON.stringify(selectedCategories));
-  }, [selectedCategories]);
+    const processResult = ({ ticker, data }) => {
+      if (!data || data.error) return null;
+      const pe = data.trailingPE ?? data.forwardPE ?? null;
+      const eps = data.trailingEps ?? data.epsTrailingTwelveMonths ?? data.forwardEps ?? null;
+      const beta = data.beta ?? null;
+      let dividendYield = null;
+      if (data.dividendYield != null) {
+        const pct = +data.dividendYield.toFixed(2);
+        dividendYield = (pct >= 0 && pct <= 25) ? pct : null;
+      }
+      return [ticker, {
+        pe: (pe != null && pe > -1000 && pe < 10000) ? +pe.toFixed(1) : null,
+        eps: (eps != null && Math.abs(eps) < 10000) ? +eps.toFixed(2) : null,
+        marketCap: formatMarketCap(data.marketCap),
+        beta: (beta != null && beta > -10 && beta < 10) ? +beta.toFixed(2) : null,
+        dividendYield,
+      }];
+    };
 
-  useEffect(() => {
-    localStorage.setItem('sim_stocks', JSON.stringify(selectedStocks));
-  }, [selectedStocks]);
+    const BATCH_SIZE = 5;
+    const runBatches = async () => {
+      setStatsLoading(true);
+      for (let i = 0; i < uncached.length; i += BATCH_SIZE) {
+        const batch = uncached.slice(i, i + BATCH_SIZE);
+        const results = await Promise.all(batch.map(fetchOne));
+        const newStats = {};
+        results.forEach(r => {
+          const entry = processResult(r);
+          if (entry) newStats[entry[0]] = entry[1];
+        });
+        if (Object.keys(newStats).length) {
+          setLiveStats(prev => ({ ...prev, ...newStats }));
+        }
+        if (i + BATCH_SIZE < uncached.length) {
+          await new Promise(res => setTimeout(res, 300));
+        }
+      }
+      setStatsLoading(false);
+    };
 
-  useEffect(() => {
-    localStorage.setItem('sim_categoryIndex', currentCategoryIndex.toString());
-  }, [currentCategoryIndex]);
+    runBatches();
+  }, [step, currentCategoryIndex]);
 
-
-  const handleConfigSubmit = () => {
-    setStep('categories');
-  };
+  const handleConfigSubmit = () => setStep('categories');
 
   const handleCategorySelect = (categoryId) => {
     if (selectedCategories.includes(categoryId)) {
