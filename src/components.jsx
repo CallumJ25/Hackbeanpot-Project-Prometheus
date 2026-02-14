@@ -31,7 +31,7 @@ export const FadeInSection = ({ children, className = "", delay = 0 }) => {
   );
 };
 
-export const Quiz = ({ quiz, onComplete, soundEnabled = true, answered = false, wasCorrect = false }) => {
+export const Quiz = ({ quiz, onComplete, soundEnabled = true, answered = false, wasCorrect = false, learnMoreUrl = null }) => {
   const [selected, setSelected] = useState(null);
   const [showResult, setShowResult] = useState(false);
 
@@ -61,10 +61,23 @@ export const Quiz = ({ quiz, onComplete, soundEnabled = true, answered = false, 
 
   return (
     <div className="bg-white rounded-2xl p-6 md:p-8 shadow-lg border border-cream-dark">
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex items-center justify-between gap-2 mb-4">
         <span className="font-display text-lg font-semibold text-navy">
           {answered ? '✓ Completed' : '❓ Check Your Understanding'}
         </span>
+        {learnMoreUrl && (
+          <a
+            href={learnMoreUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-teal hover:text-teal-light text-sm font-medium flex items-center gap-1 transition-colors"
+          >
+            📚 Learn More
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+          </a>
+        )}
       </div>
       <p className="text-navy mb-6 font-medium">{quiz.question}</p>
       <div className="space-y-3">
@@ -106,6 +119,16 @@ export const Quiz = ({ quiz, onComplete, soundEnabled = true, answered = false, 
             {(answered && wasCorrect) || quiz.correct === selected ? '✓ Correct!' : '✗ Not quite'}
           </p>
           <p className="text-navy-light text-sm">{quiz.explanation}</p>
+          {learnMoreUrl && (
+            <a
+              href={learnMoreUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block mt-3 text-teal hover:text-teal-light text-sm font-medium"
+            >
+              → Want to dive deeper? Read more about this topic
+            </a>
+          )}
         </div>
       )}
     </div>

@@ -75,6 +75,7 @@ function Module1({ onQuizComplete, soundEnabled, quizScores }) {
                     soundEnabled={soundEnabled}
                     answered={isAnswered}
                     wasCorrect={wasCorrect}
+                    learnMoreUrl={lesson.learnMoreUrl}
                   />
                 </div>
               </FadeInSection>

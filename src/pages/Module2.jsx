@@ -16,17 +16,17 @@ function Module2({ onQuizComplete, soundEnabled, quizScores }) {
   const allAnswered = answeredCount >= metrics.length;
 
   return (
-    <div className="min-h-screen bg-slate-900 pt-20 pb-32 md:pb-12">
+    <div className="min-h-screen bg-cream pt-20 pb-32 md:pb-12">
       <div className="container mx-auto px-6">
         <FadeInSection>
           <div className="text-center mb-16">
             <span className="inline-block bg-amber/10 text-amber px-4 py-1 rounded-full text-sm font-semibold mb-4">
               Module 2
             </span>
-            <h1 className="font-display text-3xl md:text-5xl font-bold text-cream mb-4">
+            <h1 className="font-display text-3xl md:text-5xl font-bold text-navy mb-4">
               Key Metrics
             </h1>
-            <p className="text-xl text-cream max-w-2xl mx-auto">
+            <p className="text-xl text-navy-light max-w-2xl mx-auto">
               Numbers that actually matter when evaluating a stock.
             </p>
           </div>
@@ -90,6 +90,7 @@ function Module2({ onQuizComplete, soundEnabled, quizScores }) {
                     soundEnabled={soundEnabled}
                     answered={isAnswered}
                     wasCorrect={wasCorrect}
+                    learnMoreUrl={metric.learnMoreUrl}
                   />
                 </div>
               </FadeInSection>

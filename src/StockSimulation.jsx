@@ -293,12 +293,12 @@ const StockSimulation = () => {
 
             <div>
               <label className="block text-navy font-medium mb-2">Investment Amount</label>
-              <div className="flex flex-wrap gap-2 mb-3">
-                {[50, 100, 500, 1000, 10000, 50000].map(amount => (
+              <div className="flex gap-1 md:gap-2 mb-3">
+                {[50, 100, 500, 1000, 5000, 10000, 50000].map(amount => (
                   <button
                     key={amount}
                     onClick={() => setConfig({ ...config, investment: amount, customInvestment: '' })}
-                    className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                    className={`px-2 md:px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                       config.investment === amount && !config.customInvestment
                         ? 'bg-teal text-white' 
                         : 'bg-cream-dark text-navy hover:bg-teal/20'
