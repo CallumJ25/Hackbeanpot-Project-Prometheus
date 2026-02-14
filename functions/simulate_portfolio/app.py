@@ -3,6 +3,11 @@ from typing import Any, Dict, List, Optional
 import yfinance as yf
 from datetime import datetime, date
 
+CORS_HEADERS = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+}
 
 def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     """
@@ -49,6 +54,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         if starting_cash is None or start_year is None or end_year is None or not tickers:
             return {
                 'statusCode': 400,
+                'headers': CORS_HEADERS,
                 'body': json.dumps({'error': 'Missing required fields: starting_cash, start_year, end_year, tickers'})
             }
 
@@ -59,12 +65,14 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         if starting_cash <= 0:
             return {
                 'statusCode': 400,
+                'headers': CORS_HEADERS,
                 'body': json.dumps({'error': 'starting_cash must be positive'})
             }
 
         if start_year > end_year:
             return {
                 'statusCode': 400,
+                'headers': CORS_HEADERS,
                 'body': json.dumps({'error': 'start_year must be <= end_year'})
             }
 
@@ -162,6 +170,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
 
         return {
             'statusCode': 200,
+            'headers': CORS_HEADERS,
             'body': json.dumps(result, indent=2)
         }
 
@@ -169,5 +178,6 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         print(f"Error processing request: {e}")
         return {
             'statusCode': 500,
+            'headers': CORS_HEADERS,
             'body': json.dumps({'error': str(e)})
         }

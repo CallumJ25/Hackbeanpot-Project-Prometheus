@@ -1,7 +1,15 @@
-import { useState, useMemo } from 'react';
-import { SIMULATION_CONFIG, CATEGORIES, SP500_DATA, FUN_PURCHASES } from './config';
+import { useState, useMemo, useEffect } from 'react';
+import { API_BASE_URL, SIMULATION_CONFIG, CATEGORIES, SP500_DATA, FUN_PURCHASES } from './config';
 import { STOCKS_DATA, SECTOR_NAMES } from './stockData';
 import { PortfolioChart } from './components';
+
+function formatMarketCap(value) {
+  if (!value) return null;
+  if (value >= 1e12) return `$${(value / 1e12).toFixed(1)}T`;
+  if (value >= 1e9) return `$${(value / 1e9).toFixed(0)}B`;
+  if (value >= 1e6) return `$${(value / 1e6).toFixed(0)}M`;
+  return `$${value}`;
+}
 
 const StockSimulation = () => {
   const [step, setStep] = useState('setup');
@@ -17,22 +25,79 @@ const StockSimulation = () => {
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedStocks, setSelectedStocks] = useState({});
   const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
-  
-  // Search and filter state
   const [searchQuery, setSearchQuery] = useState('');
-  const [filters, setFilters] = useState({
-    peMin: '',
-    peMax: '',
-    betaMin: '',
-    betaMax: '',
-    dividendMin: '',
-    dividendMax: '',
-  });
   const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({ peMin: '', peMax: '', betaMin: '', betaMax: '', dividendMin: '', dividendMax: '' });
 
-  const handleConfigSubmit = () => {
-    setStep('categories');
-  };
+  // Live stats from /stats lambda: { [ticker]: { pe, marketCap, beta } }
+  const [liveStats, setLiveStats] = useState({});
+  const [statsLoading, setStatsLoading] = useState(false);
+
+  // Simulation result from /simulate lambda
+  const [simulationResult, setSimulationResult] = useState(null);
+  const [simulationLoading, setSimulationLoading] = useState(false);
+  const [simulationError, setSimulationError] = useState(null);
+
+  const getAvailableStocks = () => STOCKS_DATA[selectedCategories[currentCategoryIndex]] || [];
+
+  // Fetch /stats for all tickers in the current category (skip already cached).
+  // Requests are batched (5 at a time) to avoid yfinance rate-limiting.
+  useEffect(() => {
+    if (step !== 'stocks') return;
+    const stocks = getAvailableStocks();
+    const uncached = stocks.map(s => s.ticker).filter(t => !liveStats[t]);
+    if (!uncached.length) return;
+
+    const fetchOne = (ticker) =>
+      fetch(`${API_BASE_URL}/stats?symbol=${ticker}`)
+        .then(r => r.json())
+        .then(data => ({ ticker, data }))
+        .catch(() => ({ ticker, data: null }));
+
+    const processResult = ({ ticker, data }) => {
+      if (!data || data.error) return null;
+      const pe = data.trailingPE ?? data.forwardPE ?? null;
+      const eps = data.trailingEps ?? data.epsTrailingTwelveMonths ?? data.forwardEps ?? null;
+      const beta = data.beta ?? null;
+      let dividendYield = null;
+      if (data.dividendYield != null) {
+        const pct = +data.dividendYield.toFixed(2);
+        dividendYield = (pct >= 0 && pct <= 25) ? pct : null;
+      }
+      return [ticker, {
+        pe: (pe != null && pe > -1000 && pe < 10000) ? +pe.toFixed(1) : null,
+        eps: (eps != null && Math.abs(eps) < 10000) ? +eps.toFixed(2) : null,
+        marketCap: formatMarketCap(data.marketCap),
+        beta: (beta != null && beta > -10 && beta < 10) ? +beta.toFixed(2) : null,
+        dividendYield,
+      }];
+    };
+
+    const BATCH_SIZE = 5;
+    const runBatches = async () => {
+      setStatsLoading(true);
+      for (let i = 0; i < uncached.length; i += BATCH_SIZE) {
+        const batch = uncached.slice(i, i + BATCH_SIZE);
+        const results = await Promise.all(batch.map(fetchOne));
+        const newStats = {};
+        results.forEach(r => {
+          const entry = processResult(r);
+          if (entry) newStats[entry[0]] = entry[1];
+        });
+        if (Object.keys(newStats).length) {
+          setLiveStats(prev => ({ ...prev, ...newStats }));
+        }
+        if (i + BATCH_SIZE < uncached.length) {
+          await new Promise(res => setTimeout(res, 300));
+        }
+      }
+      setStatsLoading(false);
+    };
+
+    runBatches();
+  }, [step, currentCategoryIndex]);
+
+  const handleConfigSubmit = () => setStep('categories');
 
   const handleCategorySelect = (categoryId) => {
     if (selectedCategories.includes(categoryId)) {
@@ -52,99 +117,118 @@ const StockSimulation = () => {
   const handleStockSelect = (stock) => {
     const categoryId = selectedCategories[currentCategoryIndex];
     const currentStocks = selectedStocks[categoryId] || [];
-    
+
     if (currentStocks.find(s => s.ticker === stock.ticker)) {
-      setSelectedStocks({
-        ...selectedStocks,
-        [categoryId]: currentStocks.filter(s => s.ticker !== stock.ticker)
-      });
+      setSelectedStocks({ ...selectedStocks, [categoryId]: currentStocks.filter(s => s.ticker !== stock.ticker) });
     } else if (currentStocks.length < config.stocksPerCategory) {
-      setSelectedStocks({
-        ...selectedStocks,
-        [categoryId]: [...currentStocks, stock]
-      });
+      setSelectedStocks({ ...selectedStocks, [categoryId]: [...currentStocks, stock] });
     }
   };
 
-  const handleStocksSubmit = () => {
+  const handleStocksSubmit = async () => {
     if (currentCategoryIndex < selectedCategories.length - 1) {
       setCurrentCategoryIndex(currentCategoryIndex + 1);
       setSearchQuery('');
       setFilters({ peMin: '', peMax: '', betaMin: '', betaMax: '', dividendMin: '', dividendMax: '' });
     } else {
       setStep('results');
+      setSimulationLoading(true);
+      setSimulationError(null);
+      setSimulationResult(null);
+      try {
+        const allTickers = Object.values(selectedStocks).flat().map(s => s.ticker);
+        const res = await fetch(`${API_BASE_URL}/simulate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            starting_cash: config.investment,
+            start_year: config.year,
+            end_year: new Date().getFullYear(),
+            tickers: allTickers,
+          }),
+        });
+        const data = await res.json();
+        setSimulationResult(data);
+      } catch (err) {
+        setSimulationError(err.message);
+      } finally {
+        setSimulationLoading(false);
+      }
     }
   };
 
-  const calculateResults = () => {
-    const numStocks = config.numCategories * config.stocksPerCategory;
+  const getResults = () => {
+    if (!simulationResult) return null;
+
     const yearsHeld = new Date().getFullYear() - config.year + (new Date().getMonth() / 12);
     const monthsHeld = Math.floor(yearsHeld * 12);
-    
-    let totalInvested = 0;
-    let totalValue = 0;
-    const stockResults = [];
+    const allStocks = Object.values(selectedStocks).flat();
 
-    Object.entries(selectedStocks).forEach(([categoryId, stocks]) => {
-      stocks.forEach(stock => {
-        let shares = 0;
-        let invested = 0;
-        
-        if (config.investmentStrategy === 'lump') {
-          invested = config.investment / numStocks;
-          shares = invested / stock.priceStart;
-        } else {
-          const monthlyPerStock = config.dcaMonthly / numStocks;
-          const startPrice = stock.priceStart;
-          const endPrice = stock.priceNow;
-          
-          for (let month = 0; month < monthsHeld; month++) {
-            const progress = month / monthsHeld;
-            const priceAtMonth = startPrice + (endPrice - startPrice) * progress * 0.7;
-            shares += monthlyPerStock / priceAtMonth;
-            invested += monthlyPerStock;
-          }
+    let totalInvested, totalValue, stockResults;
+
+    if (config.investmentStrategy === 'lump') {
+      totalInvested = simulationResult.starting_cash;
+      totalValue = simulationResult.final_cash;
+      stockResults = allStocks.map(stock => {
+        const b = simulationResult.ticker_breakdown?.[stock.ticker];
+        if (!b || b.error) {
+          return { ...stock, invested: totalInvested / allStocks.length, shares: 0, currentValue: 0, gain: 0, gainPercent: 0 };
         }
-        
-        const currentValue = shares * stock.priceNow;
-        const gain = currentValue - invested;
-        const gainPercent = invested > 0 ? ((currentValue - invested) / invested) * 100 : 0;
-        
-        totalInvested += invested;
-        totalValue += currentValue;
-        stockResults.push({
+        return {
           ...stock,
-          categoryId,
+          invested: b.initial_investment,
+          shares: b.final_shares,
+          currentValue: b.final_value,
+          gain: b.final_value - b.initial_investment,
+          gainPercent: b.roi * 100,
+        };
+      });
+    } else {
+      // DCA: compute locally using buy_price + sell_price from simulate response
+      const numStocks = allStocks.length;
+      const monthlyPerStock = config.dcaMonthly / numStocks;
+      stockResults = allStocks.map(stock => {
+        const b = simulationResult.ticker_breakdown?.[stock.ticker];
+        const priceNow = b?.sell_price ?? 0;
+        const startPrice = b?.buy_price ?? 0;
+        let shares = 0, invested = 0;
+        for (let month = 0; month < monthsHeld; month++) {
+          const progress = month / monthsHeld;
+          const priceAtMonth = startPrice + (priceNow - startPrice) * progress * 0.7;
+          if (priceAtMonth > 0) shares += monthlyPerStock / priceAtMonth;
+          invested += monthlyPerStock;
+        }
+        const currentValue = shares * priceNow;
+        return {
+          ...stock,
           invested,
           shares,
           currentValue,
-          gain,
-          gainPercent
-        });
+          gain: currentValue - invested,
+          gainPercent: invested > 0 ? ((currentValue - invested) / invested) * 100 : 0,
+        };
       });
-    });
+      totalInvested = stockResults.reduce((s, r) => s + r.invested, 0);
+      totalValue = stockResults.reduce((s, r) => s + r.currentValue, 0);
+    }
 
-    const bankValue = config.investmentStrategy === 'lump' 
+    const bankValue = config.investmentStrategy === 'lump'
       ? config.investment * Math.pow(1 + SIMULATION_CONFIG.bankInterestRate, yearsHeld)
       : (() => {
           let bankTotal = 0;
           const monthlyRate = SIMULATION_CONFIG.bankInterestRate / 12;
-          for (let month = 0; month < monthsHeld; month++) {
-            bankTotal = (bankTotal + config.dcaMonthly) * (1 + monthlyRate);
-          }
+          for (let m = 0; m < monthsHeld; m++) bankTotal = (bankTotal + config.dcaMonthly) * (1 + monthlyRate);
           return bankTotal;
         })();
-        
+
     const sp500Data = SP500_DATA[config.year];
-    const sp500Return = (sp500Data.now - sp500Data.start) / sp500Data.start;
+    const sp500Return = sp500Data ? (sp500Data.now - sp500Data.start) / sp500Data.start : 0;
     const sp500Value = config.investmentStrategy === 'lump'
       ? config.investment * (1 + sp500Return)
       : (() => {
           let sp500Total = 0;
           const monthlyReturn = Math.pow(1 + sp500Return, 1 / monthsHeld) - 1;
-          for (let month = 0; month < monthsHeld; month++) {
-            sp500Total = (sp500Total + config.dcaMonthly) * (1 + monthlyReturn);
-          }
+          for (let m = 0; m < monthsHeld; m++) sp500Total = (sp500Total + config.dcaMonthly) * (1 + monthlyReturn);
           return sp500Total;
         })();
 
@@ -154,62 +238,65 @@ const StockSimulation = () => {
       totalInvested,
       totalGain: totalValue - totalInvested,
       totalGainPercent: totalInvested > 0 ? ((totalValue - totalInvested) / totalInvested) * 100 : 0,
-      comparisons: {
-        mattress: totalInvested,
-        bank: bankValue,
-        sp500: sp500Value,
-      },
+      comparisons: { mattress: totalInvested, bank: bankValue, sp500: sp500Value },
       yearsHeld: yearsHeld.toFixed(1),
       strategy: config.investmentStrategy,
     };
   };
 
-  const getAvailableStocks = () => {
-    const categoryId = selectedCategories[currentCategoryIndex];
-    const categoryData = STOCKS_DATA[categoryId];
-    if (!categoryData) return [];
-    return categoryData[config.year] || categoryData[2024] || [];
-  };
-
-  // Filter and search stocks
+  // Filter and search stocks — numeric filters use liveStats since stockData has no metrics
   const filteredStocks = useMemo(() => {
     let stocks = getAvailableStocks();
-    
-    // Search filter
+
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      stocks = stocks.filter(s => 
-        s.ticker.toLowerCase().includes(query) || 
+      stocks = stocks.filter(s =>
+        s.ticker.toLowerCase().includes(query) ||
         s.name.toLowerCase().includes(query)
       );
     }
-    
-    // P/E filter
+
     if (filters.peMin !== '') {
-      stocks = stocks.filter(s => s.pe >= parseFloat(filters.peMin));
+      stocks = stocks.filter(s => {
+        const pe = liveStats[s.ticker]?.pe;
+        return pe != null && pe >= parseFloat(filters.peMin);
+      });
     }
     if (filters.peMax !== '') {
-      stocks = stocks.filter(s => s.pe <= parseFloat(filters.peMax));
+      stocks = stocks.filter(s => {
+        const pe = liveStats[s.ticker]?.pe;
+        return pe != null && pe <= parseFloat(filters.peMax);
+      });
     }
-    
-    // Beta filter
+
     if (filters.betaMin !== '') {
-      stocks = stocks.filter(s => s.beta >= parseFloat(filters.betaMin));
+      stocks = stocks.filter(s => {
+        const beta = liveStats[s.ticker]?.beta;
+        return beta != null && beta >= parseFloat(filters.betaMin);
+      });
     }
     if (filters.betaMax !== '') {
-      stocks = stocks.filter(s => s.beta <= parseFloat(filters.betaMax));
+      stocks = stocks.filter(s => {
+        const beta = liveStats[s.ticker]?.beta;
+        return beta != null && beta <= parseFloat(filters.betaMax);
+      });
     }
-    
-    // Dividend filter
+
     if (filters.dividendMin !== '') {
-      stocks = stocks.filter(s => s.dividendYield >= parseFloat(filters.dividendMin));
+      stocks = stocks.filter(s => {
+        const div = liveStats[s.ticker]?.dividendYield;
+        return div != null && div >= parseFloat(filters.dividendMin);
+      });
     }
     if (filters.dividendMax !== '') {
-      stocks = stocks.filter(s => s.dividendYield <= parseFloat(filters.dividendMax));
+      stocks = stocks.filter(s => {
+        const div = liveStats[s.ticker]?.dividendYield;
+        return div != null && div <= parseFloat(filters.dividendMax);
+      });
     }
-    
+
     return stocks;
-  }, [currentCategoryIndex, selectedCategories, config.year, searchQuery, filters]);
+  }, [currentCategoryIndex, selectedCategories, config.year, searchQuery, filters, liveStats]);
 
   const clearFilters = () => {
     setSearchQuery('');
@@ -222,7 +309,7 @@ const StockSimulation = () => {
       <div className="max-w-2xl mx-auto">
         <div className="bg-white rounded-2xl p-8 shadow-lg">
           <h3 className="font-display text-2xl font-bold text-navy mb-6">Configure Your Simulation</h3>
-          
+
           <div className="space-y-6">
             <div>
               <label className="block text-navy font-medium mb-2">Starting Year</label>
@@ -399,7 +486,7 @@ const StockSimulation = () => {
             {CATEGORIES.map(cat => {
               const isSelected = selectedCategories.includes(cat.id);
               const isDisabled = !isSelected && selectedCategories.length >= config.numCategories;
-              
+
               return (
                 <button
                   key={cat.id}
@@ -615,26 +702,34 @@ const StockSimulation = () => {
                         <span className="text-navy-light ml-2 text-sm truncate">{stock.name}</span>
                       </div>
                       <div className="flex flex-wrap gap-3 text-xs md:text-sm">
-                        <div className="bg-cream px-2 py-1 rounded">
-                          <span className="text-navy-light">Price: </span>
-                          <span className="font-semibold text-navy">${stock.priceStart.toFixed(2)}</span>
-                        </div>
-                        <div className="bg-cream px-2 py-1 rounded">
-                          <span className="text-navy-light">P/E: </span>
-                          <span className="font-semibold text-navy">{stock.pe}</span>
-                        </div>
-                        <div className="bg-cream px-2 py-1 rounded">
-                          <span className="text-navy-light">Beta: </span>
-                          <span className="font-semibold text-navy">{stock.beta}</span>
-                        </div>
-                        <div className="bg-cream px-2 py-1 rounded">
-                          <span className="text-navy-light">Div: </span>
-                          <span className="font-semibold text-navy">{stock.dividendYield}%</span>
-                        </div>
-                        <div className="bg-cream px-2 py-1 rounded hidden md:block">
-                          <span className="text-navy-light">Cap: </span>
-                          <span className="font-semibold text-navy">{stock.marketCap}</span>
-                        </div>
+                        {statsLoading && !liveStats[stock.ticker] ? (
+                          <span className="text-navy-light animate-pulse">Loading stats...</span>
+                        ) : (() => {
+                          const live = liveStats[stock.ticker];
+                          const na = <span className="font-semibold text-navy-light">N/A</span>;
+                          return (<>
+                            <div className="bg-cream px-2 py-1 rounded">
+                              <span className="text-navy-light">P/E: </span>
+                              {live?.pe != null ? <span className="font-semibold text-navy">{live.pe}</span> : na}
+                            </div>
+                            <div className="bg-cream px-2 py-1 rounded">
+                              <span className="text-navy-light">EPS: </span>
+                              {live?.eps != null ? <span className="font-semibold text-navy">${live.eps}</span> : na}
+                            </div>
+                            <div className="bg-cream px-2 py-1 rounded">
+                              <span className="text-navy-light">Beta: </span>
+                              {live?.beta != null ? <span className="font-semibold text-navy">{live.beta}</span> : na}
+                            </div>
+                            <div className="bg-cream px-2 py-1 rounded">
+                              <span className="text-navy-light">Div: </span>
+                              {live?.dividendYield != null ? <span className="font-semibold text-navy">{live.dividendYield}%</span> : na}
+                            </div>
+                            <div className="bg-cream px-2 py-1 rounded hidden md:block">
+                              <span className="text-navy-light">Cap: </span>
+                              {live?.marketCap ? <span className="font-semibold text-navy">{live.marketCap}</span> : na}
+                            </div>
+                          </>);
+                        })()}
                       </div>
                     </div>
                   </button>
@@ -661,7 +756,38 @@ const StockSimulation = () => {
 
   // Results Step
   if (step === 'results') {
-    const results = calculateResults();
+    if (simulationLoading) {
+      return (
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white rounded-2xl p-12 shadow-lg text-center">
+            <div className="text-4xl mb-4 animate-bounce">📊</div>
+            <p className="text-navy font-semibold text-lg">Crunching the numbers...</p>
+            <p className="text-navy-light mt-2">Fetching real historical data for your portfolio</p>
+          </div>
+        </div>
+      );
+    }
+
+    if (simulationError || !simulationResult) {
+      return (
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white rounded-2xl p-12 shadow-lg text-center">
+            <div className="text-4xl mb-4">⚠️</div>
+            <p className="text-navy font-semibold text-lg">Failed to load simulation</p>
+            <p className="text-navy-light mt-2">{simulationError || 'Unknown error'}</p>
+            <button
+              onClick={() => { setStep('setup'); setSelectedCategories([]); setSelectedStocks({}); setCurrentCategoryIndex(0); }}
+              className="mt-6 bg-navy text-white px-6 py-2 rounded-xl font-semibold hover:bg-navy-light transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    const results = getResults();
+    if (!results) return null;
     const isProfit = results.totalGain >= 0;
 
     return (
@@ -683,7 +809,7 @@ const StockSimulation = () => {
         </div>
 
         {/* Portfolio Growth Chart */}
-        <PortfolioChart 
+        <PortfolioChart
           startYear={config.year}
           endYear={new Date().getFullYear()}
           startValue={results.strategy === 'dca' ? 0 : results.totalInvested}
@@ -723,7 +849,7 @@ const StockSimulation = () => {
               </div>
               <span className="font-semibold text-navy">${results.comparisons.mattress.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
             </div>
-            
+
             <div className="flex items-center justify-between p-4 bg-cream rounded-lg">
               <div className="flex items-center gap-3">
                 <span className="text-2xl">🏦</span>
@@ -731,7 +857,7 @@ const StockSimulation = () => {
               </div>
               <span className="font-semibold text-navy">${results.comparisons.bank.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
             </div>
-            
+
             <div className="flex items-center justify-between p-4 bg-cream rounded-lg">
               <div className="flex items-center gap-3">
                 <span className="text-2xl">📈</span>
@@ -758,7 +884,7 @@ const StockSimulation = () => {
               const amount = isProfit ? results.totalGain : results.totalValue;
               const quantity = Math.floor(amount / item.unitPrice);
               if (quantity <= 0) return null;
-              
+
               return (
                 <div key={i} className="flex items-center gap-3 p-3 bg-cream rounded-lg">
                   <span className="text-2xl">{item.icon}</span>

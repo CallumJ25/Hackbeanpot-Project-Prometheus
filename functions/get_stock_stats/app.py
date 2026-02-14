@@ -2,6 +2,12 @@ import json
 from typing import Any, Dict, Optional
 import yfinance as yf
 
+CORS_HEADERS = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+}
+
 def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     """
     Lambda function to fetch stock statistics using yfinance.
@@ -28,6 +34,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         if not symbol:
             return {
                 'statusCode': 400,
+                'headers': CORS_HEADERS,
                 'body': json.dumps({'error': 'Missing stock symbol in query parameters.'})
             }
 
@@ -35,9 +42,10 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         ticker: yf.Ticker = yf.Ticker(symbol)
         info: Dict[str, Any] = ticker.info
 
-        if not info or 'symbol' not in info:
+        if not info or not isinstance(info, dict) or info.get('quoteType') is None:
             return {
                 'statusCode': 404,
+                'headers': CORS_HEADERS,
                 'body': json.dumps({'error': f'Stock symbol {symbol} not found or invalid.'})
             }
 
@@ -46,6 +54,8 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'symbol': info.get('symbol'),
             'shortName': info.get('shortName'),
             'trailingEps': info.get('trailingEps'),
+            'epsTrailingTwelveMonths': info.get('epsTrailingTwelveMonths'),
+            'forwardEps': info.get('forwardEps'),
             'forwardPE': info.get('forwardPE'),
             'trailingPE': info.get('trailingPE'),
             'dividendYield': info.get('dividendYield'),
@@ -56,6 +66,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
 
         return {
             'statusCode': 200,
+            'headers': CORS_HEADERS,
             'body': json.dumps(statistics, indent=2)
         }
 
@@ -63,5 +74,6 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         print(f"Error processing request: {e}")
         return {
             'statusCode': 500,
+            'headers': CORS_HEADERS,
             'body': json.dumps({'error': str(e)})
         }

@@ -51,3 +51,19 @@ Resources:
           Properties:
             Path: /gemini
             Method: post
+
+  SimulatePortfolioFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/simulate_portfolio/
+      Handler: app.lambda_handler
+      Runtime: python3.13
+      Architectures:
+        - x86_64
+      Timeout: 120
+      Events:
+        SimulatePortfolio:
+          Type: Api
+          Properties:
+            Path: /simulate
+            Method: post
