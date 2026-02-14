@@ -84,16 +84,22 @@ export const TopNav = ({ soundEnabled, setSoundEnabled, totalCorrect, totalAnswe
                 {/* Question dots - only show for current module */}
                 {isActive && mod.questions > 0 && (
                   <div className="flex flex-col gap-1 mt-2">
-                    {Array.from({ length: mod.questions }).map((_, i) => (
-                      <div
-                        key={i}
-                        className={`w-2 h-2 rounded-full transition-all ${
-                          i < answeredCount 
-                            ? 'bg-teal' 
-                            : 'bg-cream-dark'
-                        }`}
-                      />
-                    ))}
+                    {Array.from({ length: mod.questions }).map((_, i) => {
+                      const quizKey = `${mod.prefix}-${i}`;
+                      const isAnswered = quizScores[quizKey] !== undefined;
+                      const isCorrect = quizScores[quizKey] === true;
+                      
+                      return (
+                        <div
+                          key={i}
+                          className={`w-2 h-2 rounded-full transition-all ${
+                            isAnswered 
+                              ? (isCorrect ? 'bg-teal' : 'bg-coral') 
+                              : 'bg-cream-dark'
+                          }`}
+                        />
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -145,14 +151,22 @@ export const TopNav = ({ soundEnabled, setSoundEnabled, totalCorrect, totalAnswe
                 {/* Small progress bar for mobile */}
                 {isActive && mod.questions > 0 && (
                   <div className="flex gap-0.5 mt-1">
-                    {Array.from({ length: mod.questions }).map((_, i) => (
-                      <div
-                        key={i}
-                        className={`w-1.5 h-1.5 rounded-full ${
-                          i < answeredCount ? 'bg-teal' : 'bg-cream-dark'
-                        }`}
-                      />
-                    ))}
+                    {Array.from({ length: mod.questions }).map((_, i) => {
+                      const quizKey = `${mod.prefix}-${i}`;
+                      const isAnswered = quizScores[quizKey] !== undefined;
+                      const isCorrect = quizScores[quizKey] === true;
+                      
+                      return (
+                        <div
+                          key={i}
+                          className={`w-1.5 h-1.5 rounded-full ${
+                            isAnswered 
+                              ? (isCorrect ? 'bg-teal' : 'bg-coral') 
+                              : 'bg-cream-dark'
+                          }`}
+                        />
+                      );
+                    })}
                   </div>
                 )}
               </Link>
