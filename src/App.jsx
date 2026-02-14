@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
+import { supabase } from './supabaseClient';
 import { Storage } from './utils';
 import { metrics, psychologyTopics, beginnerMistakes, chartLessons } from './educationalData';
 import { TopNav } from './PageLayout';
@@ -11,6 +12,8 @@ import Module3 from './pages/Module3';
 import Module4 from './pages/Module4';
 import Simulation from './pages/Simulation';
 import Conclusion from './pages/Conclusion';
+import Auth from './pages/Auth';
+import Dashboard from './pages/Dashboard';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -56,6 +59,24 @@ function App() {
     Storage.clear('totalCorrect');
     Storage.clear('totalAnswered');
   };
+
+  const [session, setSession] = useState(null);
+
+  useEffect(() => {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   return (
     <div className="min-h-screen bg-cream">
@@ -105,6 +126,10 @@ function App() {
             totalCorrect={totalCorrect}
             totalAnswered={totalAnswered}
           />
+        } />
+        <Route path="/login" element={<Auth />} />
+        <Route path="/dashboard" element={
+          session ? <Dashboard session={session} /> : <Auth />
         } />
       </Routes>
     </div>
