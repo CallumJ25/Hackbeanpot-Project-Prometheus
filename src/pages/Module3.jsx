@@ -78,6 +78,7 @@ function Module3({ onQuizComplete, soundEnabled, quizScores }) {
                       soundEnabled={soundEnabled}
                       answered={isAnswered}
                       wasCorrect={wasCorrect}
+                      learnMoreUrl={topic.learnMoreUrl}
                     />
                   </div>
                 </div>
