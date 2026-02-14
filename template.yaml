@@ -3,6 +3,12 @@ Transform: AWS::Serverless-2016-10-31
 Description: >
   Sample SAM Template for Stock Statistics Lambda
 
+Parameters:
+  GeminiApiKey:
+    Type: String
+    NoEcho: true
+    Description: Gemini API key
+
 Globals:
   Function:
     Timeout: 30
@@ -38,7 +44,7 @@ Resources:
         - x86_64
       Environment:
         Variables:
-          GEMINI_API_KEY: !Sub '{{resolve:ssm:/prometheus/GEMINI_API_KEY}}'
+          GEMINI_API_KEY: !Ref GeminiApiKey
       Events:
         GeminiPrompt:
           Type: Api
