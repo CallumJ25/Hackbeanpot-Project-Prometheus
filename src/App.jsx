@@ -109,14 +109,18 @@ function App() {
           <div className="absolute top-20 left-10 w-72 h-72 bg-teal/20 rounded-full blur-3xl" />
           <div className="absolute bottom-20 right-10 w-96 h-96 bg-amber/20 rounded-full blur-3xl" />
         </div>
-        
+
+        <div className="relative min-h-screen">
+          <div className="absolute left-0 top-1/2 z-10" style={{ transform: 'translateY(-50%) translateX(-35%) rotate(-90deg)', transformOrigin: 'center' }}>
+            <FadeInSection>
+              <h2 className="font-display text-[10vw] font-bold text-navy tracking-tight whitespace-nowrap">
+                Prometheus 
+              </h2>
+            </FadeInSection>
+          </div>
+        </div>
+
         <div className="container mx-auto px-6 py-20 text-center relative z-10">
-          <FadeInSection>
-            <h2 className="font-display text-6xl md:text-8xl lg:text-9xl font-bold text-navy tracking-tight mb-10">
-              Project Prometheus
-            </h2>
-          </FadeInSection>
-          
           <FadeInSection delay={0.2}>
             <h1 className="font-display text-3xl md:text-5xl lg:text-6xl font-bold text-navy mb-6 leading-tight">
               Can we talk about the
