@@ -1,3 +1,8 @@
+// ==================== API CONFIGURATION ====================
+// Deployed API Gateway URL - usage: fetch(`${API_BASE_URL}/stats?symbol=MSFT`)
+export const API_BASE_URL = "https://cuqm29daa5.execute-api.us-east-2.amazonaws.com/Prod";
+
+// ==================== SIMULATION CONFIGURATION ====================
 export const SIMULATION_CONFIG = {
   availableYears: [2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026],
   defaultYear: 2020,
