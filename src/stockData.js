@@ -1,6 +1,3 @@
-// ==================== STOCK DATA ====================
-// PLACEHOLDER DATA - Replace with real data from API
-
 export const STOCKS_DATA = {
   tech: {
     2000: [
@@ -24,6 +21,13 @@ export const STOCKS_DATA = {
       { ticker: 'FB', name: 'Meta Platforms', priceStart: 78.02, priceNow: 585.25, pe: 72.5, marketCap: '215B', beta: 1.25 },
       { ticker: 'AMZN', name: 'Amazon', priceStart: 308.52, priceNow: 205.75, pe: 520.5, marketCap: '142B', beta: 1.48 },
     ],
+    2020: [
+      { ticker: 'AAPL', name: 'Apple Inc.', priceStart: 75.09, priceNow: 228.50, pe: 24.2, marketCap: '1.4T', beta: 1.20 },
+      { ticker: 'MSFT', name: 'Microsoft', priceStart: 157.70, priceNow: 415.20, pe: 28.5, marketCap: '1.2T', beta: 0.95 },
+      { ticker: 'NVDA', name: 'NVIDIA', priceStart: 59.85, priceNow: 875.30, pe: 52.1, marketCap: '150B', beta: 1.65 },
+      { ticker: 'GOOGL', name: 'Alphabet', priceStart: 68.37, priceNow: 172.40, pe: 20.5, marketCap: '920B', beta: 1.08 },
+      { ticker: 'META', name: 'Meta Platforms', priceStart: 209.78, priceNow: 585.25, pe: 18.2, marketCap: '585B', beta: 1.42 },
+    ],
     2023: [
       { ticker: 'AAPL', name: 'Apple Inc.', priceStart: 125.07, priceNow: 228.50, pe: 24.2, marketCap: '2.0T', beta: 1.20 },
       { ticker: 'MSFT', name: 'Microsoft', priceStart: 239.82, priceNow: 415.20, pe: 28.5, marketCap: '1.8T', beta: 0.95 },
@@ -39,7 +43,6 @@ export const STOCKS_DATA = {
       { ticker: 'META', name: 'Meta Platforms', priceStart: 353.96, priceNow: 585.25, pe: 32.8, marketCap: '1.5T', beta: 1.38 },
     ],
   },
-  
   healthcare: {
     2008: [
       { ticker: 'JNJ', name: 'Johnson & Johnson', priceStart: 66.25, priceNow: 158.20, pe: 13.5, marketCap: '180B', beta: 0.52 },
@@ -47,6 +50,13 @@ export const STOCKS_DATA = {
       { ticker: 'MRK', name: 'Merck', priceStart: 57.61, priceNow: 102.40, pe: 10.5, marketCap: '125B', beta: 0.55 },
       { ticker: 'AMGN', name: 'Amgen', priceStart: 47.25, priceNow: 285.60, pe: 12.8, marketCap: '52B', beta: 0.48 },
       { ticker: 'GILD', name: 'Gilead Sciences', priceStart: 18.92, priceNow: 95.40, pe: 15.2, marketCap: '32B', beta: 0.72 },
+    ],
+    2020: [
+      { ticker: 'JNJ', name: 'Johnson & Johnson', priceStart: 145.87, priceNow: 158.20, pe: 16.5, marketCap: '385B', beta: 0.52 },
+      { ticker: 'UNH', name: 'UnitedHealth', priceStart: 293.65, priceNow: 485.30, pe: 23.1, marketCap: '280B', beta: 0.72 },
+      { ticker: 'PFE', name: 'Pfizer', priceStart: 38.95, priceNow: 26.15, pe: 8.5, marketCap: '215B', beta: 0.65 },
+      { ticker: 'ABBV', name: 'AbbVie', priceStart: 88.54, priceNow: 178.90, pe: 20.2, marketCap: '155B', beta: 0.55 },
+      { ticker: 'MRK', name: 'Merck', priceStart: 90.95, priceNow: 102.40, pe: 14.2, marketCap: '230B', beta: 0.48 },
     ],
     2023: [
       { ticker: 'JNJ', name: 'Johnson & Johnson', priceStart: 176.65, priceNow: 158.20, pe: 16.5, marketCap: '420B', beta: 0.52 },
@@ -63,7 +73,6 @@ export const STOCKS_DATA = {
       { ticker: 'MRK', name: 'Merck', priceStart: 108.22, priceNow: 102.40, pe: 16.8, marketCap: '260B', beta: 0.45 },
     ],
   },
-  
   finance: {
     2008: [
       { ticker: 'JPM', name: 'JPMorgan Chase', priceStart: 43.65, priceNow: 245.80, pe: 9.2, marketCap: '155B', beta: 1.25 },
@@ -71,6 +80,13 @@ export const STOCKS_DATA = {
       { ticker: 'WFC', name: 'Wells Fargo', priceStart: 30.19, priceNow: 72.50, pe: 12.8, marketCap: '100B', beta: 1.18 },
       { ticker: 'C', name: 'Citigroup', priceStart: 294.00, priceNow: 68.40, pe: 8.5, marketCap: '145B', beta: 1.55 },
       { ticker: 'GS', name: 'Goldman Sachs', priceStart: 215.05, priceNow: 585.20, pe: 10.2, marketCap: '85B', beta: 1.42 },
+    ],
+    2020: [
+      { ticker: 'JPM', name: 'JPMorgan Chase', priceStart: 139.40, priceNow: 245.80, pe: 10.2, marketCap: '425B', beta: 1.15 },
+      { ticker: 'BAC', name: 'Bank of America', priceStart: 35.22, priceNow: 42.15, pe: 9.5, marketCap: '300B', beta: 1.38 },
+      { ticker: 'V', name: 'Visa Inc.', priceStart: 188.70, priceNow: 315.60, pe: 28.5, marketCap: '400B', beta: 0.92 },
+      { ticker: 'MA', name: 'Mastercard', priceStart: 298.59, priceNow: 520.40, pe: 33.2, marketCap: '300B', beta: 1.02 },
+      { ticker: 'GS', name: 'Goldman Sachs', priceStart: 229.93, priceNow: 585.20, pe: 11.5, marketCap: '80B', beta: 1.45 },
     ],
     2023: [
       { ticker: 'JPM', name: 'JPMorgan Chase', priceStart: 134.10, priceNow: 245.80, pe: 10.2, marketCap: '390B', beta: 1.15 },
@@ -87,7 +103,6 @@ export const STOCKS_DATA = {
       { ticker: 'GS', name: 'Goldman Sachs', priceStart: 385.52, priceNow: 585.20, pe: 15.8, marketCap: '175B', beta: 1.42 },
     ],
   },
-  
   energy: {
     2008: [
       { ticker: 'XOM', name: 'Exxon Mobil', priceStart: 93.56, priceNow: 108.45, pe: 11.2, marketCap: '510B', beta: 0.92 },
@@ -95,6 +110,13 @@ export const STOCKS_DATA = {
       { ticker: 'COP', name: 'ConocoPhillips', priceStart: 86.52, priceNow: 102.35, pe: 9.8, marketCap: '140B', beta: 1.12 },
       { ticker: 'SLB', name: 'Schlumberger', priceStart: 98.75, priceNow: 42.60, pe: 28.5, marketCap: '135B', beta: 1.35 },
       { ticker: 'OXY', name: 'Occidental', priceStart: 78.45, priceNow: 48.20, pe: 14.2, marketCap: '65B', beta: 1.28 },
+    ],
+    2020: [
+      { ticker: 'XOM', name: 'Exxon Mobil', priceStart: 70.90, priceNow: 108.45, pe: 8.5, marketCap: '300B', beta: 0.88 },
+      { ticker: 'CVX', name: 'Chevron', priceStart: 121.43, priceNow: 148.20, pe: 9.2, marketCap: '230B', beta: 0.95 },
+      { ticker: 'COP', name: 'ConocoPhillips', priceStart: 65.56, priceNow: 102.35, pe: 7.8, marketCap: '72B', beta: 1.18 },
+      { ticker: 'NEE', name: 'NextEra Energy', priceStart: 61.28, priceNow: 72.80, pe: 32.5, marketCap: '120B', beta: 0.48 },
+      { ticker: 'SLB', name: 'Schlumberger', priceStart: 40.20, priceNow: 42.60, pe: 18.2, marketCap: '56B', beta: 1.32 },
     ],
     2023: [
       { ticker: 'XOM', name: 'Exxon Mobil', priceStart: 110.30, priceNow: 108.45, pe: 8.5, marketCap: '440B', beta: 0.88 },
@@ -111,7 +133,6 @@ export const STOCKS_DATA = {
       { ticker: 'SLB', name: 'Schlumberger', priceStart: 52.14, priceNow: 42.60, pe: 14.5, marketCap: '60B', beta: 1.35 },
     ],
   },
-  
   consumer: {
     2008: [
       { ticker: 'WMT', name: 'Walmart', priceStart: 46.90, priceNow: 92.45, pe: 15.5, marketCap: '195B', beta: 0.45 },
@@ -119,6 +140,13 @@ export const STOCKS_DATA = {
       { ticker: 'KO', name: 'Coca-Cola', priceStart: 30.69, priceNow: 62.85, pe: 21.5, marketCap: '145B', beta: 0.52 },
       { ticker: 'MCD', name: "McDonald's", priceStart: 58.06, priceNow: 295.40, pe: 16.8, marketCap: '68B', beta: 0.55 },
       { ticker: 'NKE', name: 'Nike Inc.', priceStart: 16.63, priceNow: 72.15, pe: 18.5, marketCap: '32B', beta: 0.92 },
+    ],
+    2020: [
+      { ticker: 'AMZN', name: 'Amazon', priceStart: 93.75, priceNow: 205.75, pe: 58.2, marketCap: '920B', beta: 1.22 },
+      { ticker: 'WMT', name: 'Walmart', priceStart: 118.94, priceNow: 92.45, pe: 23.5, marketCap: '340B', beta: 0.48 },
+      { ticker: 'PG', name: 'Procter & Gamble', priceStart: 124.90, priceNow: 168.30, pe: 24.2, marketCap: '310B', beta: 0.45 },
+      { ticker: 'KO', name: 'Coca-Cola', priceStart: 58.93, priceNow: 62.85, pe: 25.8, marketCap: '255B', beta: 0.55 },
+      { ticker: 'NKE', name: 'Nike Inc.', priceStart: 101.31, priceNow: 72.15, pe: 28.5, marketCap: '160B', beta: 1.05 },
     ],
     2023: [
       { ticker: 'AMZN', name: 'Amazon', priceStart: 84.00, priceNow: 205.75, pe: 58.2, marketCap: '860B', beta: 1.22 },
@@ -135,7 +163,6 @@ export const STOCKS_DATA = {
       { ticker: 'NKE', name: 'Nike Inc.', priceStart: 107.43, priceNow: 72.15, pe: 22.8, marketCap: '108B', beta: 1.02 },
     ],
   },
-  
   industrial: {
     2008: [
       { ticker: 'GE', name: 'General Electric', priceStart: 37.07, priceNow: 185.20, pe: 15.5, marketCap: '370B', beta: 1.15 },
@@ -143,6 +170,13 @@ export const STOCKS_DATA = {
       { ticker: 'BA', name: 'Boeing', priceStart: 86.62, priceNow: 175.60, pe: 18.5, marketCap: '52B', beta: 1.35 },
       { ticker: 'MMM', name: '3M Company', priceStart: 79.57, priceNow: 135.80, pe: 13.8, marketCap: '55B', beta: 0.85 },
       { ticker: 'HON', name: 'Honeywell', priceStart: 54.63, priceNow: 215.80, pe: 15.2, marketCap: '42B', beta: 1.02 },
+    ],
+    2020: [
+      { ticker: 'CAT', name: 'Caterpillar', priceStart: 147.90, priceNow: 365.40, pe: 13.2, marketCap: '80B', beta: 1.05 },
+      { ticker: 'HON', name: 'Honeywell', priceStart: 177.74, priceNow: 215.80, pe: 22.5, marketCap: '125B', beta: 1.05 },
+      { ticker: 'UPS', name: 'UPS', priceStart: 116.79, priceNow: 128.45, pe: 14.8, marketCap: '100B', beta: 1.08 },
+      { ticker: 'BA', name: 'Boeing', priceStart: 325.76, priceNow: 175.60, pe: -8.5, marketCap: '185B', beta: 1.48 },
+      { ticker: 'GE', name: 'GE Aerospace', priceStart: 11.16, priceNow: 185.20, pe: 18.2, marketCap: '98B', beta: 1.22 },
     ],
     2023: [
       { ticker: 'CAT', name: 'Caterpillar', priceStart: 239.36, priceNow: 365.40, pe: 13.2, marketCap: '125B', beta: 1.05 },

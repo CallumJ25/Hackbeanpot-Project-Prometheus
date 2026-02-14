@@ -4,7 +4,6 @@ import { Storage } from './utils';
 import { metrics, psychologyTopics, beginnerMistakes, chartLessons } from './educationalData';
 import { TopNav } from './PageLayout';
 
-// Pages
 import Home from './pages/Home';
 import Module1 from './pages/Module1';
 import Module2 from './pages/Module2';
