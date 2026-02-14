@@ -1,0 +1,39 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Direct: Python Lambda Handler",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "functions.get_stock_stats.app",
+            "args": [],
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            }
+        },
+        {
+            "name": "SAM: Local StockStatsFunction",
+            "type": "aws-sam",
+            "request": "direct-invoke",
+            "lambda": {
+                "runtime": "python3.9",
+                "handler": "app.lambda_handler",
+                "payload": {
+                    "json": {
+                        "queryStringParameters": {
+                            "symbol": "AAPL"
+                        }
+                    }
+                },
+                "environmentVariables": {}
+            },
+            "invokeTarget": {
+                "target": "template",
+                "templatePath": "${workspaceFolder}/template.yaml",
+                "logicalId": "StockStatsFunction"
+            }
+        }
+    ]
+}
