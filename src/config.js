@@ -1,12 +1,7 @@
-// ==================== API CONFIGURATION ====================
-// Deployed API Gateway URL - usage: fetch(`${API_BASE_URL}/stats?symbol=MSFT`)
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
-// ==================== SIMULATION CONFIGURATION ====================
 export const SIMULATION_CONFIG = {
-  availableYears: [2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026],
+  availableYears: [2020, 2021, 2022, 2023, 2024, 2025],
   defaultYear: 2020,
-  defaultInvestment: 10000,
+  defaultInvestment: 1000,
   bankInterestRate: 0.045,
 };
 
