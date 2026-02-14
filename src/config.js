@@ -1,3 +1,5 @@
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export const SIMULATION_CONFIG = {
   availableYears: [2020, 2021, 2022, 2023, 2024, 2025],
   defaultYear: 2020,
