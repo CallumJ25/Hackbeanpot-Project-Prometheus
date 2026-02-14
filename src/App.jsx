@@ -66,6 +66,7 @@ function App() {
         totalCorrect={totalCorrect}
         totalAnswered={totalAnswered}
         resetProgress={resetProgress}
+        quizScores={quizScores}
       />
       
       <Routes>

@@ -1,13 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
 
 const modules = [
-  { path: '/', name: 'Home', short: '🏠' },
-  { path: '/module/1', name: 'Chart Reading', short: '1' },
-  { path: '/module/2', name: 'Key Metrics', short: '2' },
-  { path: '/module/3', name: 'Psychology', short: '3' },
-  { path: '/module/4', name: 'Mistakes', short: '4' },
-  { path: '/simulation', name: 'Simulation', short: '🎮' },
-  { path: '/conclusion', name: 'Conclusion', short: '✓' },
+  { path: '/', name: 'Home', short: '🏠', questions: 0 },
+  { path: '/module/1', name: 'Chart Reading', short: '1', questions: 3, prefix: 'chart' },
+  { path: '/module/2', name: 'Key Metrics', short: '2', questions: 6, prefix: 'metric' },
+  { path: '/module/3', name: 'Psychology', short: '3', questions: 5, prefix: 'psych' },
+  { path: '/module/4', name: 'Mistakes', short: '4', questions: 5, prefix: 'mistake' },
+  { path: '/simulation', name: 'Simulation', short: '🎮', questions: 0 },
+  { path: '/conclusion', name: 'Conclusion', short: '✓', questions: 0 },
 ];
 
 export const PageNavigation = ({ prevPath, nextPath, prevLabel, nextLabel, nextDisabled = false }) => {
@@ -45,36 +45,65 @@ export const PageNavigation = ({ prevPath, nextPath, prevLabel, nextLabel, nextD
   );
 };
 
-export const TopNav = ({ soundEnabled, setSoundEnabled, totalCorrect, totalAnswered, resetProgress }) => {
+export const TopNav = ({ soundEnabled, setSoundEnabled, totalCorrect, totalAnswered, resetProgress, quizScores = {} }) => {
   const location = useLocation();
   
+  // Count answered questions for a module
+  const getModuleProgress = (prefix, total) => {
+    if (!prefix || total === 0) return 0;
+    let count = 0;
+    for (let i = 0; i < total; i++) {
+      if (quizScores[`${prefix}-${i}`] !== undefined) count++;
+    }
+    return count;
+  };
+
   return (
     <>
-      {/* Progress dots - desktop */}
-      <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50 hidden md:block">
-        <div className="flex items-center gap-2 bg-white/90 backdrop-blur px-4 py-2 rounded-full shadow-lg">
-          {modules.map((mod, index) => {
+      {/* Vertical sidebar - desktop */}
+      <nav className="fixed right-4 top-1/2 -translate-y-1/2 z-50 hidden md:block">
+        <div className="flex flex-col items-center gap-3 bg-white/90 backdrop-blur px-3 py-4 rounded-2xl shadow-lg">
+          {modules.map((mod) => {
             const isActive = location.pathname === mod.path;
+            const answeredCount = getModuleProgress(mod.prefix, mod.questions);
+            
             return (
-              <Link
-                key={mod.path}
-                to={mod.path}
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all ${
-                  isActive 
-                    ? 'bg-teal text-white scale-110' 
-                    : 'bg-cream-dark text-navy hover:bg-teal/20'
-                }`}
-                title={mod.name}
-              >
-                {mod.short}
-              </Link>
+              <div key={mod.path} className="flex flex-col items-center">
+                <Link
+                  to={mod.path}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all ${
+                    isActive 
+                      ? 'bg-teal text-white scale-110' 
+                      : 'bg-cream-dark text-navy hover:bg-teal/20'
+                  }`}
+                  title={mod.name}
+                >
+                  {mod.short}
+                </Link>
+                
+                {/* Question dots - only show for current module */}
+                {isActive && mod.questions > 0 && (
+                  <div className="flex flex-col gap-1 mt-2">
+                    {Array.from({ length: mod.questions }).map((_, i) => (
+                      <div
+                        key={i}
+                        className={`w-2 h-2 rounded-full transition-all ${
+                          i < answeredCount 
+                            ? 'bg-teal' 
+                            : 'bg-cream-dark'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
             );
           })}
         </div>
       </nav>
 
       {/* Settings - top right */}
-      <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+      <div className="fixed top-4 right-4 z-50 flex items-center gap-2 md:right-20">
         {totalAnswered > 0 && (
           <div className="bg-white/90 backdrop-blur px-3 py-2 rounded-full shadow-lg text-sm text-navy">
             {totalCorrect}/{totalAnswered}
@@ -102,6 +131,8 @@ export const TopNav = ({ soundEnabled, setSoundEnabled, totalCorrect, totalAnswe
         <div className="flex justify-around py-2">
           {modules.map((mod) => {
             const isActive = location.pathname === mod.path;
+            const answeredCount = getModuleProgress(mod.prefix, mod.questions);
+            
             return (
               <Link
                 key={mod.path}
@@ -111,6 +142,19 @@ export const TopNav = ({ soundEnabled, setSoundEnabled, totalCorrect, totalAnswe
                 }`}
               >
                 <span className="text-lg">{mod.short}</span>
+                {/* Small progress bar for mobile */}
+                {isActive && mod.questions > 0 && (
+                  <div className="flex gap-0.5 mt-1">
+                    {Array.from({ length: mod.questions }).map((_, i) => (
+                      <div
+                        key={i}
+                        className={`w-1.5 h-1.5 rounded-full ${
+                          i < answeredCount ? 'bg-teal' : 'bg-cream-dark'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                )}
               </Link>
             );
           })}
