@@ -1,4 +1,4 @@
-import { FadeInSection, Quiz, LockedContent } from '../components';
+import { FadeInSection, Quiz } from '../components';
 import { metrics } from '../educationalData';
 import { PageNavigation } from '../PageLayout';
 
@@ -29,9 +29,6 @@ function Module2({ onQuizComplete, soundEnabled, quizScores }) {
             <p className="text-xl text-navy-light max-w-2xl mx-auto">
               Numbers that actually matter when evaluating a stock.
             </p>
-            <p className="text-sm text-navy-light mt-4">
-              Progress: {answeredCount} / {metrics.length} completed
-            </p>
           </div>
         </FadeInSection>
 
@@ -39,65 +36,63 @@ function Module2({ onQuizComplete, soundEnabled, quizScores }) {
           {metrics.map((metric, index) => {
             const quizId = `metric-${index}`;
             const isAnswered = quizScores[quizId] !== undefined;
-            const isLocked = index > answeredCount;
+            const isVisible = index <= answeredCount;
             const wasCorrect = quizScores[quizId] === true;
 
+            if (!isVisible) return null;
+
             return (
-              <div key={index}>
-                <LockedContent isLocked={isLocked} message="Complete the question above to unlock this section">
-                  <FadeInSection delay={0.1}>
-                    <div className="bg-white rounded-2xl p-6 md:p-10 shadow-lg">
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className="text-3xl">{metric.emoji}</span>
-                        <div>
-                          <h3 className="font-display text-2xl font-bold text-navy">{metric.name}</h3>
-                          <p className="text-navy-light">{metric.subtitle}</p>
-                        </div>
-                      </div>
-                      
-                      <p className="text-navy-light mb-6">{metric.description}</p>
-                      
-                      <div className="bg-navy/5 rounded-xl p-4 mb-6 font-mono text-sm">
-                        <span className="text-navy font-semibold">{metric.formula}</span>
-                      </div>
-
-                      <div className="bg-cream rounded-xl p-4 mb-6">
-                        <p className="text-navy"><span className="font-semibold">Example:</span> {metric.example}</p>
-                      </div>
-
-                      {metric.categories && (
-                        <div className="grid md:grid-cols-3 gap-4 mb-6">
-                          {metric.categories.map((cat, i) => (
-                            <div key={i} className="bg-cream-dark rounded-xl p-4">
-                              <p className="font-semibold text-navy">{cat.name}</p>
-                              <p className="text-teal font-mono text-sm">{cat.range}</p>
-                              <p className="text-navy-light text-sm">{cat.description}</p>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {metric.insight && (
-                        <div className="bg-amber/10 rounded-xl p-4 mb-6">
-                          <p className="text-navy"><span className="font-semibold text-amber">💡 Context:</span> {metric.insight}</p>
-                        </div>
-                      )}
-
-                      <div className="bg-teal/10 rounded-xl p-4 mb-6">
-                        <p className="text-navy"><span className="font-semibold text-teal">📌 Key takeaway:</span> {metric.keyTakeaway}</p>
-                      </div>
-
-                      <Quiz 
-                        quiz={metric.quiz} 
-                        onComplete={(correct) => onQuizComplete(quizId, correct)}
-                        soundEnabled={soundEnabled}
-                        answered={isAnswered}
-                        wasCorrect={wasCorrect}
-                      />
+              <FadeInSection key={index} delay={0.1}>
+                <div className="bg-white rounded-2xl p-6 md:p-10 shadow-lg">
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="text-3xl">{metric.emoji}</span>
+                    <div>
+                      <h3 className="font-display text-2xl font-bold text-navy">{metric.name}</h3>
+                      <p className="text-navy-light">{metric.subtitle}</p>
                     </div>
-                  </FadeInSection>
-                </LockedContent>
-              </div>
+                  </div>
+                  
+                  <p className="text-navy-light mb-6">{metric.description}</p>
+                  
+                  <div className="bg-navy/5 rounded-xl p-4 mb-6 font-mono text-sm">
+                    <span className="text-navy font-semibold">{metric.formula}</span>
+                  </div>
+
+                  <div className="bg-cream rounded-xl p-4 mb-6">
+                    <p className="text-navy"><span className="font-semibold">Example:</span> {metric.example}</p>
+                  </div>
+
+                  {metric.categories && (
+                    <div className="grid md:grid-cols-3 gap-4 mb-6">
+                      {metric.categories.map((cat, i) => (
+                        <div key={i} className="bg-cream-dark rounded-xl p-4">
+                          <p className="font-semibold text-navy">{cat.name}</p>
+                          <p className="text-teal font-mono text-sm">{cat.range}</p>
+                          <p className="text-navy-light text-sm">{cat.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {metric.insight && (
+                    <div className="bg-amber/10 rounded-xl p-4 mb-6">
+                      <p className="text-navy"><span className="font-semibold text-amber">💡 Context:</span> {metric.insight}</p>
+                    </div>
+                  )}
+
+                  <div className="bg-teal/10 rounded-xl p-4 mb-6">
+                    <p className="text-navy"><span className="font-semibold text-teal">📌 Key takeaway:</span> {metric.keyTakeaway}</p>
+                  </div>
+
+                  <Quiz 
+                    quiz={metric.quiz} 
+                    onComplete={(correct) => onQuizComplete(quizId, correct)}
+                    soundEnabled={soundEnabled}
+                    answered={isAnswered}
+                    wasCorrect={wasCorrect}
+                  />
+                </div>
+              </FadeInSection>
             );
           })}
 

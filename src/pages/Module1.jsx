@@ -1,14 +1,13 @@
-import { FadeInSection, Quiz, LockedContent } from '../components';
+import { FadeInSection, Quiz } from '../components';
 import { chartLessons } from '../educationalData';
 import { PageNavigation } from '../PageLayout';
 
 function Module1({ onQuizComplete, soundEnabled, quizScores }) {
-  // Check how many quizzes have been answered in this module
   const getAnsweredCount = () => {
     let count = 0;
     for (let i = 0; i < chartLessons.length; i++) {
       if (quizScores[`chart-${i}`] !== undefined) count++;
-      else break; // Stop at first unanswered
+      else break;
     }
     return count;
   };
@@ -30,9 +29,6 @@ function Module1({ onQuizComplete, soundEnabled, quizScores }) {
             <p className="text-xl text-navy-light max-w-2xl mx-auto">
               Charts tell a story. Learn to read it.
             </p>
-            <p className="text-sm text-navy-light mt-4">
-              Progress: {answeredCount} / {chartLessons.length} completed
-            </p>
           </div>
         </FadeInSection>
 
@@ -40,50 +36,48 @@ function Module1({ onQuizComplete, soundEnabled, quizScores }) {
           {chartLessons.map((lesson, index) => {
             const quizId = `chart-${index}`;
             const isAnswered = quizScores[quizId] !== undefined;
-            const isLocked = index > answeredCount;
+            const isVisible = index <= answeredCount;
             const wasCorrect = quizScores[quizId] === true;
 
+            if (!isVisible) return null;
+
             return (
-              <div key={index}>
-                <LockedContent isLocked={isLocked} message="Complete the question above to unlock this section">
-                  <FadeInSection delay={0.1}>
-                    <div className="bg-white rounded-2xl p-6 md:p-10 shadow-lg">
-                      <div className="flex items-center gap-3 mb-4">
-                        <span className="text-3xl">{lesson.emoji}</span>
-                        <h3 className="font-display text-2xl font-bold text-navy">{lesson.title}</h3>
-                      </div>
-                      
-                      <p className="text-navy-light mb-6">{lesson.description}</p>
-                      
-                      <div className="space-y-3 mb-6">
-                        {lesson.points.map((point, i) => (
-                          <div key={i} className="flex gap-3">
-                            <span className="text-teal font-bold">•</span>
-                            <div>
-                              <span className="font-semibold text-navy">{point.term}:</span>
-                              <span className="text-navy-light ml-1">{point.description}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-
-                      {lesson.insight && (
-                        <div className="bg-amber/10 rounded-xl p-4 mb-6">
-                          <p className="text-navy"><span className="font-semibold text-amber">💡 Key insight:</span> {lesson.insight}</p>
+              <FadeInSection key={index} delay={0.1}>
+                <div className="bg-white rounded-2xl p-6 md:p-10 shadow-lg">
+                  <div className="flex items-center gap-3 mb-4">
+                    <span className="text-3xl">{lesson.emoji}</span>
+                    <h3 className="font-display text-2xl font-bold text-navy">{lesson.title}</h3>
+                  </div>
+                  
+                  <p className="text-navy-light mb-6">{lesson.description}</p>
+                  
+                  <div className="space-y-3 mb-6">
+                    {lesson.points.map((point, i) => (
+                      <div key={i} className="flex gap-3">
+                        <span className="text-teal font-bold">•</span>
+                        <div>
+                          <span className="font-semibold text-navy">{point.term}:</span>
+                          <span className="text-navy-light ml-1">{point.description}</span>
                         </div>
-                      )}
+                      </div>
+                    ))}
+                  </div>
 
-                      <Quiz 
-                        quiz={lesson.quiz} 
-                        onComplete={(correct) => onQuizComplete(quizId, correct)}
-                        soundEnabled={soundEnabled}
-                        answered={isAnswered}
-                        wasCorrect={wasCorrect}
-                      />
+                  {lesson.insight && (
+                    <div className="bg-amber/10 rounded-xl p-4 mb-6">
+                      <p className="text-navy"><span className="font-semibold text-amber">💡 Key insight:</span> {lesson.insight}</p>
                     </div>
-                  </FadeInSection>
-                </LockedContent>
-              </div>
+                  )}
+
+                  <Quiz 
+                    quiz={lesson.quiz} 
+                    onComplete={(correct) => onQuizComplete(quizId, correct)}
+                    soundEnabled={soundEnabled}
+                    answered={isAnswered}
+                    wasCorrect={wasCorrect}
+                  />
+                </div>
+              </FadeInSection>
             );
           })}
 

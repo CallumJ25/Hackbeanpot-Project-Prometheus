@@ -1,4 +1,4 @@
-import { FadeInSection, Quiz, LockedContent } from '../components';
+import { FadeInSection, Quiz } from '../components';
 import { beginnerMistakes } from '../educationalData';
 import { PageNavigation } from '../PageLayout';
 
@@ -29,9 +29,6 @@ function Module4({ onQuizComplete, soundEnabled, quizScores }) {
             <p className="text-xl text-navy-light max-w-2xl mx-auto">
               Learn from others' expensive lessons.
             </p>
-            <p className="text-sm text-navy-light mt-4">
-              Progress: {answeredCount} / {beginnerMistakes.length} completed
-            </p>
           </div>
         </FadeInSection>
 
@@ -39,60 +36,58 @@ function Module4({ onQuizComplete, soundEnabled, quizScores }) {
           {beginnerMistakes.map((mistake, index) => {
             const quizId = `mistake-${index}`;
             const isAnswered = quizScores[quizId] !== undefined;
-            const isLocked = index > answeredCount;
+            const isVisible = index <= answeredCount;
             const wasCorrect = quizScores[quizId] === true;
 
-            return (
-              <div key={index}>
-                <LockedContent isLocked={isLocked} message="Complete the question above to unlock this section">
-                  <FadeInSection delay={0.1}>
-                    <div className="bg-white rounded-2xl p-6 md:p-10 shadow-lg border-l-4 border-coral">
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className="text-3xl">{mistake.emoji}</span>
-                        <div>
-                          <h3 className="font-display text-2xl font-bold text-navy">{mistake.name}</h3>
-                          <p className="text-navy-light italic">"{mistake.saying}"</p>
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-4 my-6">
-                        <div className="bg-coral/10 rounded-xl p-4">
-                          <span className="font-semibold text-coral">The mistake:</span>
-                          <p className="text-navy mt-1">{mistake.mistake}</p>
-                        </div>
-                        
-                        <div>
-                          <span className="font-semibold text-navy">Why it happens:</span>
-                          <p className="text-navy-light mt-1">{mistake.whyItHappens}</p>
-                        </div>
-                        
-                        <div>
-                          <span className="font-semibold text-navy">The consequence:</span>
-                          <p className="text-navy-light mt-1">{mistake.consequence}</p>
-                        </div>
-                        
-                        <div className="bg-amber/10 rounded-xl p-4">
-                          <span className="font-semibold text-amber">Real example:</span>
-                          <p className="text-navy mt-1">{mistake.realExample}</p>
-                        </div>
-                        
-                        <div className="bg-sage/10 rounded-xl p-4">
-                          <span className="font-semibold text-sage">The solution:</span>
-                          <p className="text-navy mt-1">{mistake.solution}</p>
-                        </div>
-                      </div>
+            if (!isVisible) return null;
 
-                      <Quiz 
-                        quiz={mistake.quiz} 
-                        onComplete={(correct) => onQuizComplete(quizId, correct)}
-                        soundEnabled={soundEnabled}
-                        answered={isAnswered}
-                        wasCorrect={wasCorrect}
-                      />
+            return (
+              <FadeInSection key={index} delay={0.1}>
+                <div className="bg-white rounded-2xl p-6 md:p-10 shadow-lg border-l-4 border-coral">
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="text-3xl">{mistake.emoji}</span>
+                    <div>
+                      <h3 className="font-display text-2xl font-bold text-navy">{mistake.name}</h3>
+                      <p className="text-navy-light italic">"{mistake.saying}"</p>
                     </div>
-                  </FadeInSection>
-                </LockedContent>
-              </div>
+                  </div>
+                  
+                  <div className="space-y-4 my-6">
+                    <div className="bg-coral/10 rounded-xl p-4">
+                      <span className="font-semibold text-coral">The mistake:</span>
+                      <p className="text-navy mt-1">{mistake.mistake}</p>
+                    </div>
+                    
+                    <div>
+                      <span className="font-semibold text-navy">Why it happens:</span>
+                      <p className="text-navy-light mt-1">{mistake.whyItHappens}</p>
+                    </div>
+                    
+                    <div>
+                      <span className="font-semibold text-navy">The consequence:</span>
+                      <p className="text-navy-light mt-1">{mistake.consequence}</p>
+                    </div>
+                    
+                    <div className="bg-amber/10 rounded-xl p-4">
+                      <span className="font-semibold text-amber">Real example:</span>
+                      <p className="text-navy mt-1">{mistake.realExample}</p>
+                    </div>
+                    
+                    <div className="bg-sage/10 rounded-xl p-4">
+                      <span className="font-semibold text-sage">The solution:</span>
+                      <p className="text-navy mt-1">{mistake.solution}</p>
+                    </div>
+                  </div>
+
+                  <Quiz 
+                    quiz={mistake.quiz} 
+                    onComplete={(correct) => onQuizComplete(quizId, correct)}
+                    soundEnabled={soundEnabled}
+                    answered={isAnswered}
+                    wasCorrect={wasCorrect}
+                  />
+                </div>
+              </FadeInSection>
             );
           })}
 

@@ -1,4 +1,4 @@
-import { FadeInSection, Quiz, LockedContent } from '../components';
+import { FadeInSection, Quiz } from '../components';
 import { psychologyTopics } from '../educationalData';
 import { PageNavigation } from '../PageLayout';
 
@@ -29,9 +29,6 @@ function Module3({ onQuizComplete, soundEnabled, quizScores }) {
             <p className="text-xl text-cream/80 max-w-2xl mx-auto">
               Your brain is wired to make bad investment decisions. Here's why.
             </p>
-            <p className="text-sm text-cream/60 mt-4">
-              Progress: {answeredCount} / {psychologyTopics.length} completed
-            </p>
           </div>
         </FadeInSection>
 
@@ -39,54 +36,52 @@ function Module3({ onQuizComplete, soundEnabled, quizScores }) {
           {psychologyTopics.map((topic, index) => {
             const quizId = `psych-${index}`;
             const isAnswered = quizScores[quizId] !== undefined;
-            const isLocked = index > answeredCount;
+            const isVisible = index <= answeredCount;
             const wasCorrect = quizScores[quizId] === true;
 
+            if (!isVisible) return null;
+
             return (
-              <div key={index}>
-                <LockedContent isLocked={isLocked} message="Complete the question above to unlock this section">
-                  <FadeInSection delay={0.1}>
-                    <div className="bg-navy-light/50 rounded-2xl p-6 md:p-10">
-                      <div className="flex items-center gap-3 mb-4">
-                        <span className="text-4xl">{topic.emoji}</span>
-                        <div>
-                          <h3 className="font-display text-2xl font-bold">{topic.name}</h3>
-                          <p className="text-cream/70">{topic.fullName}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="bg-navy/50 rounded-xl p-4 mb-6">
-                        <p className="text-cream/90 italic">"{topic.scenario}"</p>
-                      </div>
-
-                      <div className="space-y-4 mb-6">
-                        <div>
-                          <span className="text-coral font-semibold">The danger:</span>
-                          <p className="text-cream/80 mt-1">{topic.danger}</p>
-                        </div>
-                        <div>
-                          <span className="text-teal-light font-semibold">Real example:</span>
-                          <p className="text-cream/80 mt-1">{topic.realExample}</p>
-                        </div>
-                        <div>
-                          <span className="text-sage font-semibold">The antidote:</span>
-                          <p className="text-cream/80 mt-1">{topic.antidote}</p>
-                        </div>
-                      </div>
-
-                      <div className="bg-white rounded-2xl p-6 md:p-8">
-                        <Quiz 
-                          quiz={topic.quiz} 
-                          onComplete={(correct) => onQuizComplete(quizId, correct)}
-                          soundEnabled={soundEnabled}
-                          answered={isAnswered}
-                          wasCorrect={wasCorrect}
-                        />
-                      </div>
+              <FadeInSection key={index} delay={0.1}>
+                <div className="bg-navy-light/50 rounded-2xl p-6 md:p-10">
+                  <div className="flex items-center gap-3 mb-4">
+                    <span className="text-4xl">{topic.emoji}</span>
+                    <div>
+                      <h3 className="font-display text-2xl font-bold">{topic.name}</h3>
+                      <p className="text-cream/70">{topic.fullName}</p>
                     </div>
-                  </FadeInSection>
-                </LockedContent>
-              </div>
+                  </div>
+                  
+                  <div className="bg-navy/50 rounded-xl p-4 mb-6">
+                    <p className="text-cream/90 italic">"{topic.scenario}"</p>
+                  </div>
+
+                  <div className="space-y-4 mb-6">
+                    <div>
+                      <span className="text-coral font-semibold">The danger:</span>
+                      <p className="text-cream/80 mt-1">{topic.danger}</p>
+                    </div>
+                    <div>
+                      <span className="text-teal-light font-semibold">Real example:</span>
+                      <p className="text-cream/80 mt-1">{topic.realExample}</p>
+                    </div>
+                    <div>
+                      <span className="text-sage font-semibold">The antidote:</span>
+                      <p className="text-cream/80 mt-1">{topic.antidote}</p>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-2xl p-6 md:p-8">
+                    <Quiz 
+                      quiz={topic.quiz} 
+                      onComplete={(correct) => onQuizComplete(quizId, correct)}
+                      soundEnabled={soundEnabled}
+                      answered={isAnswered}
+                      wasCorrect={wasCorrect}
+                    />
+                  </div>
+                </div>
+              </FadeInSection>
             );
           })}
 

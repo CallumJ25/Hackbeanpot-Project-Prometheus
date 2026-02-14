@@ -101,26 +101,6 @@ export const Quiz = ({ quiz, onComplete, soundEnabled = true, answered = false, 
   );
 };
 
-export const LockedContent = ({ children, isLocked, message = "Answer the question above to continue" }) => {
-  if (!isLocked) {
-    return <>{children}</>;
-  }
-
-  return (
-    <div className="relative">
-      <div className="locked-content min-h-[300px] overflow-hidden">
-        {children}
-      </div>
-      <div className="locked-overlay">
-        <div className="bg-white/95 backdrop-blur rounded-2xl p-6 shadow-xl border-2 border-teal/20">
-          <span className="text-4xl block mb-3">🔒</span>
-          <p className="text-navy font-semibold">{message}</p>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 export const PortfolioChart = ({ startYear, endYear, startValue, endValue, comparisons }) => {
   const chartRef = useRef(null);
   const [animated, setAnimated] = useState(false);
