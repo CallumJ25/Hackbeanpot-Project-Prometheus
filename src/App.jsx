@@ -88,12 +88,20 @@ function App() {
       {/* Settings Toggle */}
       <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
         <button
+          onClick ={resetProgress}
+          className="bg-white/90 backdrop-blur px-3 py-2 rounded-full shadow-lg hover:bg-white transition-colors text-sm text-navy-light"
+          >
+            Log in
+        </button>
+
+        <button
           onClick={() => setSoundEnabled(!soundEnabled)}
           className="bg-white/90 backdrop-blur p-2 rounded-full shadow-lg hover:bg-white transition-colors"
           title={soundEnabled ? 'Sound On' : 'Sound Off'}
         >
           {soundEnabled ? '🔊' : '🔇'}
         </button>
+
         {totalAnswered > 0 && (
           <button
             onClick={resetProgress}
