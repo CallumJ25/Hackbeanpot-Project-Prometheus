@@ -92,7 +92,7 @@ export const TopNav = ({ soundEnabled, setSoundEnabled, totalCorrect, totalAnswe
     <>
       {/* Vertical sidebar - desktop */}
       <nav className="fixed right-4 top-1/2 -translate-y-1/2 z-50 hidden md:block">
-        <div className="flex flex-col items-center gap-3 bg-white/90 backdrop-blur px-3 py-4 rounded-2xl shadow-lg">
+        <div className="flex flex-col items-center gap-3 bg-black backdrop-blur px-3 py-4 rounded-2xl shadow-lg">
           {modules.map((mod, index) => {
             const isActive = location.pathname === mod.path;
             const unlocked = isModuleUnlocked(index);
@@ -104,8 +104,8 @@ export const TopNav = ({ soundEnabled, setSoundEnabled, totalCorrect, totalAnswe
                     to={mod.path}
                     className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all ${
                       isActive 
-                        ? 'bg-teal text-white scale-110' 
-                        : 'bg-cream-dark text-navy hover:bg-teal/20'
+                        ? 'bg-emerald-400 text-white scale-110' 
+                        : 'bg-teal text-cream hover:bg-emerald-400'
                     }`}
                     title={mod.name}
                   >
@@ -162,12 +162,18 @@ export const TopNav = ({ soundEnabled, setSoundEnabled, totalCorrect, totalAnswe
           {soundEnabled ? '🔊' : '🔇'}
         </button>
         {totalAnswered > 0 && (
-          <button
-            onClick={resetProgress}
-            className="bg-white/90 backdrop-blur px-3 py-2 rounded-full shadow-lg hover:bg-white transition-colors text-sm text-navy-light"
-          >
-            Reset
-          </button>
+          <div className="flex justify-center">
+            <button
+              onClick={resetProgress}
+            >
+              <Link 
+                to="/module/1"
+                className="bg-white/90 backdrop-blur px-10 py-2 rounded-full shadow-lg hover:bg-white transition-colors text-navy-light text-center"
+              >
+                Reset
+              </Link>
+            </button>
+          </div>
         )}
       </div>
 

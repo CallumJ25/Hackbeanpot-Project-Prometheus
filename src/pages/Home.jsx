@@ -38,7 +38,9 @@ function Home({ totalQuizzes }) {
           
           <FadeInSection delay={0.4}>
             <p className="text-xl md:text-2xl text-cream max-w-2xl ml-auto mb-12 text-right">
-              Knowledge shouldn't be a privilege.
+              Around 62% of Gen Z is not finanically literate.
+              
+              <span className= "block text-emerald-400"> Together, we can change that.</span>
             </p>
           </FadeInSection>
           
@@ -150,6 +152,8 @@ function Home({ totalQuizzes }) {
                   <p className="text-navy-light">We show you risks and limitations, not just opportunities.</p>
                 </div>
               </FadeInSection>
+
+              
             </div>
           </div>
         </div>
