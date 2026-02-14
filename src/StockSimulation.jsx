@@ -1,7 +1,15 @@
-import { useState } from 'react';
-import { SIMULATION_CONFIG, CATEGORIES, SP500_DATA, FUN_PURCHASES } from './config';
+import { useState, useEffect } from 'react';
+import { SIMULATION_CONFIG, CATEGORIES, SP500_DATA, FUN_PURCHASES, API_BASE_URL } from './config';
 import { STOCKS_DATA } from './stockData';
 import { PortfolioChart } from './components';
+
+function formatMarketCap(value) {
+  if (!value) return null;
+  if (value >= 1e12) return `$${(value / 1e12).toFixed(1)}T`;
+  if (value >= 1e9) return `$${(value / 1e9).toFixed(0)}B`;
+  if (value >= 1e6) return `$${(value / 1e6).toFixed(0)}M`;
+  return `$${value}`;
+}
 
 const StockSimulation = () => {
   const [step, setStep] = useState('setup');
@@ -17,9 +25,55 @@ const StockSimulation = () => {
   const [selectedStocks, setSelectedStocks] = useState({});
   const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
 
-  const handleConfigSubmit = () => {
-    setStep('categories');
+  // Live stats from /stats lambda: { [ticker]: { pe, marketCap, beta } }
+  const [liveStats, setLiveStats] = useState({});
+  const [statsLoading, setStatsLoading] = useState(false);
+
+  // Simulation result from /simulate lambda
+  const [simulationResult, setSimulationResult] = useState(null);
+  const [simulationLoading, setSimulationLoading] = useState(false);
+  const [simulationError, setSimulationError] = useState(null);
+
+  const getAvailableStocks = () => {
+    const categoryId = selectedCategories[currentCategoryIndex];
+    const categoryData = STOCKS_DATA[categoryId];
+    if (!categoryData) return [];
+    return categoryData[config.year] || categoryData[2024] || [];
   };
+
+  // Fetch /stats for all tickers in the current category (skip already cached)
+  useEffect(() => {
+    if (step !== 'stocks') return;
+    const stocks = getAvailableStocks();
+    const uncached = stocks.map(s => s.ticker).filter(t => !liveStats[t]);
+    if (!uncached.length) return;
+
+    setStatsLoading(true);
+    Promise.all(
+      uncached.map(ticker =>
+        fetch(`${API_BASE_URL}/stats?symbol=${ticker}`)
+          .then(r => r.json())
+          .then(data => ({ ticker, data }))
+          .catch(() => ({ ticker, data: null }))
+      )
+    ).then(results => {
+      const newStats = {};
+      results.forEach(({ ticker, data }) => {
+        if (data && !data.error) {
+          newStats[ticker] = {
+            pe: data.trailingPE ?? data.forwardPE ?? null,
+            eps: data.trailingEps ?? null,
+            marketCap: formatMarketCap(data.marketCap),
+            beta: data.beta ?? null,
+          };
+        }
+      });
+      setLiveStats(prev => ({ ...prev, ...newStats }));
+      setStatsLoading(false);
+    });
+  }, [step, currentCategoryIndex]);
+
+  const handleConfigSubmit = () => setStep('categories');
 
   const handleCategorySelect = (categoryId) => {
     if (selectedCategories.includes(categoryId)) {
@@ -37,97 +91,116 @@ const StockSimulation = () => {
   const handleStockSelect = (stock) => {
     const categoryId = selectedCategories[currentCategoryIndex];
     const currentStocks = selectedStocks[categoryId] || [];
-    
+
     if (currentStocks.find(s => s.ticker === stock.ticker)) {
-      setSelectedStocks({
-        ...selectedStocks,
-        [categoryId]: currentStocks.filter(s => s.ticker !== stock.ticker)
-      });
+      setSelectedStocks({ ...selectedStocks, [categoryId]: currentStocks.filter(s => s.ticker !== stock.ticker) });
     } else if (currentStocks.length < config.stocksPerCategory) {
-      setSelectedStocks({
-        ...selectedStocks,
-        [categoryId]: [...currentStocks, stock]
-      });
+      setSelectedStocks({ ...selectedStocks, [categoryId]: [...currentStocks, stock] });
     }
   };
 
-  const handleStocksSubmit = () => {
+  const handleStocksSubmit = async () => {
     if (currentCategoryIndex < selectedCategories.length - 1) {
       setCurrentCategoryIndex(currentCategoryIndex + 1);
     } else {
       setStep('results');
+      setSimulationLoading(true);
+      setSimulationError(null);
+      setSimulationResult(null);
+      try {
+        const allTickers = Object.values(selectedStocks).flat().map(s => s.ticker);
+        const res = await fetch(`${API_BASE_URL}/simulate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            starting_cash: config.investment,
+            start_year: config.year,
+            end_year: new Date().getFullYear(),
+            tickers: allTickers,
+          }),
+        });
+        const data = await res.json();
+        setSimulationResult(data);
+      } catch (err) {
+        setSimulationError(err.message);
+      } finally {
+        setSimulationLoading(false);
+      }
     }
   };
 
-  const calculateResults = () => {
-    const numStocks = config.numCategories * config.stocksPerCategory;
+  const getResults = () => {
+    if (!simulationResult) return null;
+
     const yearsHeld = new Date().getFullYear() - config.year + (new Date().getMonth() / 12);
     const monthsHeld = Math.floor(yearsHeld * 12);
-    
-    let totalInvested = 0;
-    let totalValue = 0;
-    const stockResults = [];
+    const allStocks = Object.values(selectedStocks).flat();
 
-    Object.entries(selectedStocks).forEach(([categoryId, stocks]) => {
-      stocks.forEach(stock => {
-        let shares = 0;
-        let invested = 0;
-        
-        if (config.investmentStrategy === 'lump') {
-          invested = config.investment / numStocks;
-          shares = invested / stock.priceStart;
-        } else {
-          const monthlyPerStock = config.dcaMonthly / numStocks;
-          const startPrice = stock.priceStart;
-          const endPrice = stock.priceNow;
-          
-          for (let month = 0; month < monthsHeld; month++) {
-            const progress = month / monthsHeld;
-            const priceAtMonth = startPrice + (endPrice - startPrice) * progress * 0.7;
-            shares += monthlyPerStock / priceAtMonth;
-            invested += monthlyPerStock;
-          }
+    let totalInvested, totalValue, stockResults;
+
+    if (config.investmentStrategy === 'lump') {
+      totalInvested = simulationResult.starting_cash;
+      totalValue = simulationResult.final_cash;
+      stockResults = allStocks.map(stock => {
+        const b = simulationResult.ticker_breakdown?.[stock.ticker];
+        if (!b || b.error) {
+          return { ...stock, invested: totalInvested / allStocks.length, shares: 0, currentValue: 0, gain: 0, gainPercent: 0 };
         }
-        
-        const currentValue = shares * stock.priceNow;
-        const gain = currentValue - invested;
-        const gainPercent = invested > 0 ? ((currentValue - invested) / invested) * 100 : 0;
-        
-        totalInvested += invested;
-        totalValue += currentValue;
-        stockResults.push({
+        return {
           ...stock,
-          categoryId,
+          invested: b.initial_investment,
+          shares: b.final_shares,
+          currentValue: b.final_value,
+          gain: b.final_value - b.initial_investment,
+          gainPercent: b.roi * 100,
+        };
+      });
+    } else {
+      // DCA: compute locally using buy_price + sell_price from simulate response
+      const numStocks = allStocks.length;
+      const monthlyPerStock = config.dcaMonthly / numStocks;
+      stockResults = allStocks.map(stock => {
+        const b = simulationResult.ticker_breakdown?.[stock.ticker];
+        const priceNow = b?.sell_price ?? 0;
+        const startPrice = b?.buy_price ?? 0;
+        let shares = 0, invested = 0;
+        for (let month = 0; month < monthsHeld; month++) {
+          const progress = month / monthsHeld;
+          const priceAtMonth = startPrice + (priceNow - startPrice) * progress * 0.7;
+          if (priceAtMonth > 0) shares += monthlyPerStock / priceAtMonth;
+          invested += monthlyPerStock;
+        }
+        const currentValue = shares * priceNow;
+        return {
+          ...stock,
           invested,
           shares,
           currentValue,
-          gain,
-          gainPercent
-        });
+          gain: currentValue - invested,
+          gainPercent: invested > 0 ? ((currentValue - invested) / invested) * 100 : 0,
+        };
       });
-    });
+      totalInvested = stockResults.reduce((s, r) => s + r.invested, 0);
+      totalValue = stockResults.reduce((s, r) => s + r.currentValue, 0);
+    }
 
-    const bankValue = config.investmentStrategy === 'lump' 
+    const bankValue = config.investmentStrategy === 'lump'
       ? config.investment * Math.pow(1 + SIMULATION_CONFIG.bankInterestRate, yearsHeld)
       : (() => {
           let bankTotal = 0;
           const monthlyRate = SIMULATION_CONFIG.bankInterestRate / 12;
-          for (let month = 0; month < monthsHeld; month++) {
-            bankTotal = (bankTotal + config.dcaMonthly) * (1 + monthlyRate);
-          }
+          for (let m = 0; m < monthsHeld; m++) bankTotal = (bankTotal + config.dcaMonthly) * (1 + monthlyRate);
           return bankTotal;
         })();
-        
+
     const sp500Data = SP500_DATA[config.year];
-    const sp500Return = (sp500Data.now - sp500Data.start) / sp500Data.start;
+    const sp500Return = sp500Data ? (sp500Data.now - sp500Data.start) / sp500Data.start : 0;
     const sp500Value = config.investmentStrategy === 'lump'
       ? config.investment * (1 + sp500Return)
       : (() => {
           let sp500Total = 0;
           const monthlyReturn = Math.pow(1 + sp500Return, 1 / monthsHeld) - 1;
-          for (let month = 0; month < monthsHeld; month++) {
-            sp500Total = (sp500Total + config.dcaMonthly) * (1 + monthlyReturn);
-          }
+          for (let m = 0; m < monthsHeld; m++) sp500Total = (sp500Total + config.dcaMonthly) * (1 + monthlyReturn);
           return sp500Total;
         })();
 
@@ -137,21 +210,10 @@ const StockSimulation = () => {
       totalInvested,
       totalGain: totalValue - totalInvested,
       totalGainPercent: totalInvested > 0 ? ((totalValue - totalInvested) / totalInvested) * 100 : 0,
-      comparisons: {
-        mattress: totalInvested,
-        bank: bankValue,
-        sp500: sp500Value,
-      },
+      comparisons: { mattress: totalInvested, bank: bankValue, sp500: sp500Value },
       yearsHeld: yearsHeld.toFixed(1),
       strategy: config.investmentStrategy,
     };
-  };
-
-  const getAvailableStocks = () => {
-    const categoryId = selectedCategories[currentCategoryIndex];
-    const categoryData = STOCKS_DATA[categoryId];
-    if (!categoryData) return [];
-    return categoryData[config.year] || categoryData[2024] || [];
   };
 
   // Setup Step
@@ -160,7 +222,7 @@ const StockSimulation = () => {
       <div className="max-w-2xl mx-auto">
         <div className="bg-white rounded-2xl p-8 shadow-lg">
           <h3 className="font-display text-2xl font-bold text-navy mb-6">Configure Your Simulation</h3>
-          
+
           <div className="space-y-6">
             <div>
               <label className="block text-navy font-medium mb-2">Starting Year</label>
@@ -187,8 +249,8 @@ const StockSimulation = () => {
                     key={amount}
                     onClick={() => setConfig({ ...config, investment: amount })}
                     className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                      config.investment === amount 
-                        ? 'bg-teal text-white' 
+                      config.investment === amount
+                        ? 'bg-teal text-white'
                         : 'bg-cream-dark text-navy hover:bg-cream'
                     }`}
                   >
@@ -206,8 +268,8 @@ const StockSimulation = () => {
                     key={num}
                     onClick={() => setConfig({ ...config, numCategories: num })}
                     className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                      config.numCategories === num 
-                        ? 'bg-teal text-white' 
+                      config.numCategories === num
+                        ? 'bg-teal text-white'
                         : 'bg-cream-dark text-navy hover:bg-cream'
                     }`}
                   >
@@ -225,8 +287,8 @@ const StockSimulation = () => {
                     key={num}
                     onClick={() => setConfig({ ...config, stocksPerCategory: num })}
                     className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                      config.stocksPerCategory === num 
-                        ? 'bg-teal text-white' 
+                      config.stocksPerCategory === num
+                        ? 'bg-teal text-white'
                         : 'bg-cream-dark text-navy hover:bg-cream'
                     }`}
                   >
@@ -260,15 +322,15 @@ const StockSimulation = () => {
             {CATEGORIES.map(category => {
               const isSelected = selectedCategories.includes(category.id);
               const isDisabled = !isSelected && selectedCategories.length >= config.numCategories;
-              
+
               return (
                 <button
                   key={category.id}
                   onClick={() => handleCategorySelect(category.id)}
                   disabled={isDisabled}
                   className={`p-4 rounded-xl border-2 text-left transition-all ${
-                    isSelected 
-                      ? 'border-teal bg-teal/10' 
+                    isSelected
+                      ? 'border-teal bg-teal/10'
                       : isDisabled
                         ? 'border-cream-dark opacity-50 cursor-not-allowed'
                         : 'border-cream-dark hover:border-teal/50'
@@ -311,9 +373,10 @@ const StockSimulation = () => {
           <div className="flex items-center gap-3 mb-2">
             <span className="text-3xl">{currentCategory?.icon}</span>
             <h3 className="font-display text-2xl font-bold text-navy">{currentCategory?.name}</h3>
+            {statsLoading && <span className="text-sm text-navy-light animate-pulse">Loading live stats...</span>}
           </div>
           <p className="text-navy-light mb-6">
-            Select {config.stocksPerCategory} stock{config.stocksPerCategory > 1 ? 's' : ''} 
+            Select {config.stocksPerCategory} stock{config.stocksPerCategory > 1 ? 's' : ''}
             ({currentCategoryIndex + 1} of {selectedCategories.length} categories)
           </p>
 
@@ -321,15 +384,16 @@ const StockSimulation = () => {
             {availableStocks.map(stock => {
               const isSelected = currentSelections.find(s => s.ticker === stock.ticker);
               const isDisabled = !isSelected && currentSelections.length >= config.stocksPerCategory;
-              
+              const live = liveStats[stock.ticker];
+
               return (
                 <button
                   key={stock.ticker}
                   onClick={() => handleStockSelect(stock)}
                   disabled={isDisabled}
                   className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
-                    isSelected 
-                      ? 'border-teal bg-teal/10' 
+                    isSelected
+                      ? 'border-teal bg-teal/10'
                       : isDisabled
                         ? 'border-cream-dark opacity-50 cursor-not-allowed'
                         : 'border-cream-dark hover:border-teal/50'
@@ -341,22 +405,30 @@ const StockSimulation = () => {
                       <span className="text-navy-light ml-2">{stock.name}</span>
                     </div>
                     <div className="flex flex-wrap gap-4 text-sm">
-                      <div>
-                        <span className="text-navy-light">Price: </span>
-                        <span className="font-semibold text-navy">${stock.priceStart.toFixed(2)}</span>
-                      </div>
-                      <div>
-                        <span className="text-navy-light">P/E: </span>
-                        <span className="font-semibold text-navy">{stock.pe}</span>
-                      </div>
-                      <div>
-                        <span className="text-navy-light">Cap: </span>
-                        <span className="font-semibold text-navy">{stock.marketCap}</span>
-                      </div>
-                      <div>
-                        <span className="text-navy-light">Beta: </span>
-                        <span className="font-semibold text-navy">{stock.beta}</span>
-                      </div>
+                      {live?.pe != null && (
+                        <div>
+                          <span className="text-navy-light">P/E: </span>
+                          <span className="font-semibold text-navy">{live.pe.toFixed(1)}</span>
+                        </div>
+                      )}
+                      {live?.eps != null && (
+                        <div>
+                          <span className="text-navy-light">EPS: </span>
+                          <span className="font-semibold text-navy">${live.eps.toFixed(2)}</span>
+                        </div>
+                      )}
+                      {live?.marketCap && (
+                        <div>
+                          <span className="text-navy-light">Mkt Cap: </span>
+                          <span className="font-semibold text-navy">{live.marketCap}</span>
+                        </div>
+                      )}
+                      {live?.beta != null && (
+                        <div>
+                          <span className="text-navy-light">Beta: </span>
+                          <span className="font-semibold text-navy">{live.beta.toFixed(2)}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </button>
@@ -382,7 +454,38 @@ const StockSimulation = () => {
 
   // Results Step
   if (step === 'results') {
-    const results = calculateResults();
+    if (simulationLoading) {
+      return (
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white rounded-2xl p-12 shadow-lg text-center">
+            <div className="text-4xl mb-4 animate-bounce">📊</div>
+            <p className="text-navy font-semibold text-lg">Crunching the numbers...</p>
+            <p className="text-navy-light mt-2">Fetching real historical data for your portfolio</p>
+          </div>
+        </div>
+      );
+    }
+
+    if (simulationError || !simulationResult) {
+      return (
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white rounded-2xl p-12 shadow-lg text-center">
+            <div className="text-4xl mb-4">⚠️</div>
+            <p className="text-navy font-semibold text-lg">Failed to load simulation</p>
+            <p className="text-navy-light mt-2">{simulationError || 'Unknown error'}</p>
+            <button
+              onClick={() => { setStep('setup'); setSelectedCategories([]); setSelectedStocks({}); setCurrentCategoryIndex(0); }}
+              className="mt-6 bg-navy text-white px-6 py-2 rounded-xl font-semibold hover:bg-navy-light transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    const results = getResults();
+    if (!results) return null;
     const isProfit = results.totalGain >= 0;
 
     return (
@@ -390,7 +493,7 @@ const StockSimulation = () => {
         {/* Main Result */}
         <div className={`rounded-2xl p-8 text-center ${isProfit ? 'bg-sage/20' : 'bg-coral/20'}`}>
           <p className="text-navy-light mb-2">
-            {results.strategy === 'dca' 
+            {results.strategy === 'dca'
               ? `Your $${config.dcaMonthly}/month since ${config.year} (${results.totalInvested.toLocaleString(undefined, { maximumFractionDigits: 0 })} total) would now be worth`
               : `Your $${results.totalInvested.toLocaleString()} invested in ${config.year} would now be worth`
             }
@@ -404,7 +507,7 @@ const StockSimulation = () => {
         </div>
 
         {/* Portfolio Growth Chart */}
-        <PortfolioChart 
+        <PortfolioChart
           startYear={config.year}
           endYear={new Date().getFullYear()}
           startValue={results.strategy === 'dca' ? 0 : results.totalInvested}
@@ -444,7 +547,7 @@ const StockSimulation = () => {
               </div>
               <span className="font-semibold text-navy">${results.comparisons.mattress.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
             </div>
-            
+
             <div className="flex items-center justify-between p-4 bg-cream rounded-lg">
               <div className="flex items-center gap-3">
                 <span className="text-2xl">🏦</span>
@@ -452,7 +555,7 @@ const StockSimulation = () => {
               </div>
               <span className="font-semibold text-navy">${results.comparisons.bank.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
             </div>
-            
+
             <div className="flex items-center justify-between p-4 bg-cream rounded-lg">
               <div className="flex items-center gap-3">
                 <span className="text-2xl">📈</span>
@@ -479,7 +582,7 @@ const StockSimulation = () => {
               const amount = isProfit ? results.totalGain : results.totalValue;
               const quantity = Math.floor(amount / item.unitPrice);
               if (quantity <= 0) return null;
-              
+
               return (
                 <div key={i} className="flex items-center gap-3 p-3 bg-cream rounded-lg">
                   <span className="text-2xl">{item.icon}</span>
@@ -500,6 +603,7 @@ const StockSimulation = () => {
               setSelectedCategories([]);
               setSelectedStocks({});
               setCurrentCategoryIndex(0);
+              setSimulationResult(null);
             }}
             className="bg-navy text-white px-8 py-3 rounded-xl font-semibold hover:bg-navy-light transition-colors"
           >
