@@ -3,6 +3,24 @@ node_modules/
 
 # Build output
 dist/
+.vite/
+
+# AWS SAM
+.aws-sam/
+samconfig.toml
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Test/coverage output
+.coverage
+htmlcov/
+.pytest_cache/
 
 # IDE
 .vscode/
