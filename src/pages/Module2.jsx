@@ -16,17 +16,17 @@ function Module2({ onQuizComplete, soundEnabled, quizScores }) {
   const allAnswered = answeredCount >= psychologyTopics.length;
 
   return (
-    <div className="min-h-screen bg-slate-900 pt-20 pb-32 md:pb-12">
+    <div className="min-h-screen bg-navy text-cream pt-20 pb-32 md:pb-12">
       <div className="container mx-auto px-6">
         <FadeInSection>
           <div className="text-center mb-16">
             <span className="inline-block bg-cream/10 text-cream px-4 py-1 rounded-full text-sm font-semibold mb-4">
               Module 2
             </span>
-            <h1 className="font-display text-3xl md:text-5xl font-bold text-cream mb-4">
+            <h1 className="font-display text-3xl md:text-5xl font-bold mb-4">
               Investor Psychology
             </h1>
-            <p className="text-xl text-cream max-w-2xl mx-auto">
+            <p className="text-xl text-cream/80 max-w-2xl mx-auto">
               Your brain is wired to make bad investment decisions. Here's why.
             </p>
           </div>
