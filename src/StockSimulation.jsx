@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { SIMULATION_CONFIG, CATEGORIES, SP500_DATA, FUN_PURCHASES, API_BASE_URL } from './config';
-import { STOCKS_DATA } from './stockData';
+import { useState, useMemo } from 'react';
+import { SIMULATION_CONFIG, CATEGORIES, SP500_DATA, FUN_PURCHASES } from './config';
+import { STOCKS_DATA, SECTOR_NAMES } from './stockData';
 import { PortfolioChart } from './components';
 
 function formatMarketCap(value) {
@@ -86,6 +86,8 @@ const StockSimulation = () => {
   const handleCategoriesSubmit = () => {
     setStep('stocks');
     setCurrentCategoryIndex(0);
+    setSearchQuery('');
+    setFilters({ peMin: '', peMax: '', betaMin: '', betaMax: '', dividendMin: '', dividendMax: '' });
   };
 
   const handleStockSelect = (stock) => {
@@ -102,6 +104,8 @@ const StockSimulation = () => {
   const handleStocksSubmit = async () => {
     if (currentCategoryIndex < selectedCategories.length - 1) {
       setCurrentCategoryIndex(currentCategoryIndex + 1);
+      setSearchQuery('');
+      setFilters({ peMin: '', peMax: '', betaMin: '', betaMax: '', dividendMin: '', dividendMax: '' });
     } else {
       setStep('results');
       setSimulationLoading(true);
@@ -216,6 +220,58 @@ const StockSimulation = () => {
     };
   };
 
+  const getAvailableStocks = () => {
+    const categoryId = selectedCategories[currentCategoryIndex];
+    const categoryData = STOCKS_DATA[categoryId];
+    if (!categoryData) return [];
+    return categoryData[config.year] || categoryData[2024] || [];
+  };
+
+  // Filter and search stocks
+  const filteredStocks = useMemo(() => {
+    let stocks = getAvailableStocks();
+    
+    // Search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      stocks = stocks.filter(s => 
+        s.ticker.toLowerCase().includes(query) || 
+        s.name.toLowerCase().includes(query)
+      );
+    }
+    
+    // P/E filter
+    if (filters.peMin !== '') {
+      stocks = stocks.filter(s => s.pe >= parseFloat(filters.peMin));
+    }
+    if (filters.peMax !== '') {
+      stocks = stocks.filter(s => s.pe <= parseFloat(filters.peMax));
+    }
+    
+    // Beta filter
+    if (filters.betaMin !== '') {
+      stocks = stocks.filter(s => s.beta >= parseFloat(filters.betaMin));
+    }
+    if (filters.betaMax !== '') {
+      stocks = stocks.filter(s => s.beta <= parseFloat(filters.betaMax));
+    }
+    
+    // Dividend filter
+    if (filters.dividendMin !== '') {
+      stocks = stocks.filter(s => s.dividendYield >= parseFloat(filters.dividendMin));
+    }
+    if (filters.dividendMax !== '') {
+      stocks = stocks.filter(s => s.dividendYield <= parseFloat(filters.dividendMax));
+    }
+    
+    return stocks;
+  }, [currentCategoryIndex, selectedCategories, config.year, searchQuery, filters]);
+
+  const clearFilters = () => {
+    setSearchQuery('');
+    setFilters({ peMin: '', peMax: '', betaMin: '', betaMax: '', dividendMin: '', dividendMax: '' });
+  };
+
   // Setup Step
   if (step === 'setup') {
     return (
@@ -237,7 +293,7 @@ const StockSimulation = () => {
                 ))}
               </select>
               <p className="text-navy-light text-xs mt-2">
-                Try 2000 for dot-com era, 2008 for financial crisis, or 2020 for pandemic recovery.
+                Try 2020 for pandemic crash, 2022 for tech downturn, or 2023 for AI boom.
               </p>
             </div>
 
@@ -249,9 +305,9 @@ const StockSimulation = () => {
                     key={amount}
                     onClick={() => setConfig({ ...config, investment: amount })}
                     className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                      config.investment === amount
-                        ? 'bg-teal text-white'
-                        : 'bg-cream-dark text-navy hover:bg-cream'
+                      config.investment === amount 
+                        ? 'bg-teal text-white' 
+                        : 'bg-cream-dark text-navy hover:bg-teal/20'
                     }`}
                   >
                     ${amount.toLocaleString()}
@@ -261,48 +317,86 @@ const StockSimulation = () => {
             </div>
 
             <div>
-              <label className="block text-navy font-medium mb-2">Number of Categories</label>
+              <label className="block text-navy font-medium mb-2">Investment Strategy</label>
               <div className="flex gap-2">
-                {[3, 4, 5].map(num => (
-                  <button
-                    key={num}
-                    onClick={() => setConfig({ ...config, numCategories: num })}
-                    className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                      config.numCategories === num
-                        ? 'bg-teal text-white'
-                        : 'bg-cream-dark text-navy hover:bg-cream'
-                    }`}
-                  >
-                    {num}
-                  </button>
-                ))}
+                <button
+                  onClick={() => setConfig({ ...config, investmentStrategy: 'lump' })}
+                  className={`flex-1 p-4 rounded-lg border-2 text-left transition-all ${
+                    config.investmentStrategy === 'lump'
+                      ? 'border-teal bg-teal/10'
+                      : 'border-cream-dark hover:border-teal/50'
+                  }`}
+                >
+                  <div className="font-semibold text-navy">Lump Sum</div>
+                  <div className="text-sm text-navy-light">Invest everything at once</div>
+                </button>
+                <button
+                  onClick={() => setConfig({ ...config, investmentStrategy: 'dca' })}
+                  className={`flex-1 p-4 rounded-lg border-2 text-left transition-all ${
+                    config.investmentStrategy === 'dca'
+                      ? 'border-teal bg-teal/10'
+                      : 'border-cream-dark hover:border-teal/50'
+                  }`}
+                >
+                  <div className="font-semibold text-navy">Dollar-Cost Average</div>
+                  <div className="text-sm text-navy-light">Invest monthly over time</div>
+                </button>
               </div>
+              
+              {config.investmentStrategy === 'dca' && (
+                <div className="mt-4">
+                  <label className="block text-navy text-sm font-medium mb-2">Monthly Investment</label>
+                  <div className="flex flex-wrap gap-2">
+                    {[100, 250, 500, 1000].map(amount => (
+                      <button
+                        key={amount}
+                        onClick={() => setConfig({ ...config, dcaMonthly: amount })}
+                        className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                          config.dcaMonthly === amount 
+                            ? 'bg-teal text-white' 
+                            : 'bg-cream-dark text-navy hover:bg-teal/20'
+                        }`}
+                      >
+                        ${amount}/mo
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
-            <div>
-              <label className="block text-navy font-medium mb-2">Stocks Per Category</label>
-              <div className="flex gap-2">
-                {[1, 2, 3].map(num => (
-                  <button
-                    key={num}
-                    onClick={() => setConfig({ ...config, stocksPerCategory: num })}
-                    className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                      config.stocksPerCategory === num
-                        ? 'bg-teal text-white'
-                        : 'bg-cream-dark text-navy hover:bg-cream'
-                    }`}
-                  >
-                    {num}
-                  </button>
-                ))}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-navy font-medium mb-2">Categories to Pick</label>
+                <select
+                  value={config.numCategories}
+                  onChange={(e) => setConfig({ ...config, numCategories: parseInt(e.target.value) })}
+                  className="w-full p-3 rounded-lg border-2 border-cream-dark bg-white text-navy focus:border-teal focus:outline-none"
+                >
+                  {[1, 2, 3, 4, 5, 6].map(n => (
+                    <option key={n} value={n}>{n} {n === 1 ? 'category' : 'categories'}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-navy font-medium mb-2">Stocks per Category</label>
+                <select
+                  value={config.stocksPerCategory}
+                  onChange={(e) => setConfig({ ...config, stocksPerCategory: parseInt(e.target.value) })}
+                  className="w-full p-3 rounded-lg border-2 border-cream-dark bg-white text-navy focus:border-teal focus:outline-none"
+                >
+                  {[1, 2, 3, 4, 5].map(n => (
+                    <option key={n} value={n}>{n} {n === 1 ? 'stock' : 'stocks'}</option>
+                  ))}
+                </select>
               </div>
             </div>
 
             <button
               onClick={handleConfigSubmit}
-              className="w-full bg-navy text-white py-3 rounded-xl font-semibold hover:bg-navy-light transition-colors"
+              className="w-full bg-teal text-white py-3 rounded-xl font-semibold hover:bg-teal-light transition-colors"
             >
-              Choose Categories →
+              Continue
             </button>
           </div>
         </div>
@@ -310,36 +404,34 @@ const StockSimulation = () => {
     );
   }
 
-  // Category Selection Step
+  // Categories Step
   if (step === 'categories') {
     return (
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-2xl mx-auto">
         <div className="bg-white rounded-2xl p-8 shadow-lg">
-          <h3 className="font-display text-2xl font-bold text-navy mb-2">Select {config.numCategories} Categories</h3>
-          <p className="text-navy-light mb-6">Choose which sectors you want to invest in.</p>
-
-          <div className="grid md:grid-cols-2 gap-4 mb-6">
-            {CATEGORIES.map(category => {
-              const isSelected = selectedCategories.includes(category.id);
+          <h3 className="font-display text-2xl font-bold text-navy mb-2">Choose Sectors</h3>
+          <p className="text-navy-light mb-6">Select {config.numCategories} {config.numCategories === 1 ? 'sector' : 'sectors'} to invest in.</p>
+          
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+            {CATEGORIES.map(cat => {
+              const isSelected = selectedCategories.includes(cat.id);
               const isDisabled = !isSelected && selectedCategories.length >= config.numCategories;
 
               return (
                 <button
-                  key={category.id}
-                  onClick={() => handleCategorySelect(category.id)}
+                  key={cat.id}
+                  onClick={() => handleCategorySelect(cat.id)}
                   disabled={isDisabled}
-                  className={`p-4 rounded-xl border-2 text-left transition-all ${
-                    isSelected
-                      ? 'border-teal bg-teal/10'
+                  className={`p-4 rounded-xl border-2 text-center transition-all ${
+                    isSelected 
+                      ? 'border-teal bg-teal/10' 
                       : isDisabled
                         ? 'border-cream-dark opacity-50 cursor-not-allowed'
                         : 'border-cream-dark hover:border-teal/50'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="text-3xl">{category.icon}</span>
-                    <span className="font-semibold text-navy">{category.name}</span>
-                  </div>
+                  <span className="text-3xl block mb-2">{cat.icon}</span>
+                  <span className="font-medium text-navy">{cat.name}</span>
                 </button>
               );
             })}
@@ -354,86 +446,218 @@ const StockSimulation = () => {
                 : 'bg-cream-dark text-navy-light cursor-not-allowed'
             }`}
           >
-            Pick Stocks →
+            Continue to Stock Selection
           </button>
         </div>
       </div>
     );
   }
 
-  // Stock Selection Step
+  // Stocks Step
   if (step === 'stocks') {
-    const currentCategory = CATEGORIES.find(c => c.id === selectedCategories[currentCategoryIndex]);
-    const availableStocks = getAvailableStocks();
-    const currentSelections = selectedStocks[selectedCategories[currentCategoryIndex]] || [];
+    const categoryId = selectedCategories[currentCategoryIndex];
+    const category = CATEGORIES.find(c => c.id === categoryId);
+    const currentSelections = selectedStocks[categoryId] || [];
 
     return (
       <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-2xl p-8 shadow-lg">
-          <div className="flex items-center gap-3 mb-2">
-            <span className="text-3xl">{currentCategory?.icon}</span>
-            <h3 className="font-display text-2xl font-bold text-navy">{currentCategory?.name}</h3>
-            {statsLoading && <span className="text-sm text-navy-light animate-pulse">Loading live stats...</span>}
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+            <div>
+              <p className="text-navy-light text-sm">Category {currentCategoryIndex + 1} of {selectedCategories.length}</p>
+              <h3 className="font-display text-2xl font-bold text-navy">
+                {category?.icon} {SECTOR_NAMES[categoryId] || category?.name}
+              </h3>
+              <p className="text-navy-light">
+                Select {config.stocksPerCategory} stocks • Data from January {config.year}
+              </p>
+            </div>
+            <div className="text-right">
+              <div className="text-3xl font-bold text-teal">{currentSelections.length}/{config.stocksPerCategory}</div>
+              <div className="text-sm text-navy-light">selected</div>
+            </div>
           </div>
-          <p className="text-navy-light mb-6">
-            Select {config.stocksPerCategory} stock{config.stocksPerCategory > 1 ? 's' : ''}
-            ({currentCategoryIndex + 1} of {selectedCategories.length} categories)
-          </p>
 
-          <div className="space-y-3 mb-6">
-            {availableStocks.map(stock => {
-              const isSelected = currentSelections.find(s => s.ticker === stock.ticker);
-              const isDisabled = !isSelected && currentSelections.length >= config.stocksPerCategory;
-              const live = liveStats[stock.ticker];
+          {/* Search and Filter Bar */}
+          <div className="mb-6 space-y-4">
+            <div className="flex gap-2">
+              <div className="flex-1 relative">
+                <input
+                  type="text"
+                  placeholder="Search by ticker or company name..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full p-3 pl-10 rounded-lg border-2 border-cream-dark bg-white text-navy focus:border-teal focus:outline-none"
+                />
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-navy-light">🔍</span>
+              </div>
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`px-4 py-3 rounded-lg border-2 font-medium transition-all ${
+                  showFilters || Object.values(filters).some(v => v !== '')
+                    ? 'border-teal bg-teal/10 text-teal'
+                    : 'border-cream-dark text-navy hover:border-teal/50'
+                }`}
+              >
+                ⚙️ Filters
+              </button>
+            </div>
 
-              return (
-                <button
-                  key={stock.ticker}
-                  onClick={() => handleStockSelect(stock)}
-                  disabled={isDisabled}
-                  className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
-                    isSelected
-                      ? 'border-teal bg-teal/10'
-                      : isDisabled
-                        ? 'border-cream-dark opacity-50 cursor-not-allowed'
-                        : 'border-cream-dark hover:border-teal/50'
-                  }`}
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-4">
-                    <div>
-                      <span className="font-bold text-navy text-lg">{stock.ticker}</span>
-                      <span className="text-navy-light ml-2">{stock.name}</span>
-                    </div>
-                    <div className="flex flex-wrap gap-4 text-sm">
-                      {live?.pe != null && (
-                        <div>
-                          <span className="text-navy-light">P/E: </span>
-                          <span className="font-semibold text-navy">{live.pe.toFixed(1)}</span>
-                        </div>
-                      )}
-                      {live?.eps != null && (
-                        <div>
-                          <span className="text-navy-light">EPS: </span>
-                          <span className="font-semibold text-navy">${live.eps.toFixed(2)}</span>
-                        </div>
-                      )}
-                      {live?.marketCap && (
-                        <div>
-                          <span className="text-navy-light">Mkt Cap: </span>
-                          <span className="font-semibold text-navy">{live.marketCap}</span>
-                        </div>
-                      )}
-                      {live?.beta != null && (
-                        <div>
-                          <span className="text-navy-light">Beta: </span>
-                          <span className="font-semibold text-navy">{live.beta.toFixed(2)}</span>
-                        </div>
-                      )}
+            {/* Filter Panel */}
+            {showFilters && (
+              <div className="p-4 bg-cream rounded-lg space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium text-navy">Filter Stocks</span>
+                  <button
+                    onClick={clearFilters}
+                    className="text-sm text-teal hover:underline"
+                  >
+                    Clear all
+                  </button>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* P/E Ratio */}
+                  <div>
+                    <label className="block text-sm text-navy-light mb-1">P/E Ratio</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        placeholder="Min"
+                        value={filters.peMin}
+                        onChange={(e) => setFilters({ ...filters, peMin: e.target.value })}
+                        className="w-full p-2 rounded border border-cream-dark text-sm focus:border-teal focus:outline-none"
+                      />
+                      <input
+                        type="number"
+                        placeholder="Max"
+                        value={filters.peMax}
+                        onChange={(e) => setFilters({ ...filters, peMax: e.target.value })}
+                        className="w-full p-2 rounded border border-cream-dark text-sm focus:border-teal focus:outline-none"
+                      />
                     </div>
                   </div>
-                </button>
-              );
-            })}
+                  
+                  {/* Beta */}
+                  <div>
+                    <label className="block text-sm text-navy-light mb-1">Beta (Volatility)</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        step="0.1"
+                        placeholder="Min"
+                        value={filters.betaMin}
+                        onChange={(e) => setFilters({ ...filters, betaMin: e.target.value })}
+                        className="w-full p-2 rounded border border-cream-dark text-sm focus:border-teal focus:outline-none"
+                      />
+                      <input
+                        type="number"
+                        step="0.1"
+                        placeholder="Max"
+                        value={filters.betaMax}
+                        onChange={(e) => setFilters({ ...filters, betaMax: e.target.value })}
+                        className="w-full p-2 rounded border border-cream-dark text-sm focus:border-teal focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Dividend Yield */}
+                  <div>
+                    <label className="block text-sm text-navy-light mb-1">Dividend Yield %</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        step="0.1"
+                        placeholder="Min"
+                        value={filters.dividendMin}
+                        onChange={(e) => setFilters({ ...filters, dividendMin: e.target.value })}
+                        className="w-full p-2 rounded border border-cream-dark text-sm focus:border-teal focus:outline-none"
+                      />
+                      <input
+                        type="number"
+                        step="0.1"
+                        placeholder="Max"
+                        value={filters.dividendMax}
+                        onChange={(e) => setFilters({ ...filters, dividendMax: e.target.value })}
+                        className="w-full p-2 rounded border border-cream-dark text-sm focus:border-teal focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                <p className="text-xs text-navy-light">
+                  💡 Tip: Low P/E may indicate value stocks, high beta means more volatility, dividend yield shows income potential.
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Stock Count */}
+          <div className="mb-4 text-sm text-navy-light">
+            Showing {filteredStocks.length} of {getAvailableStocks().length} stocks
+            {(searchQuery || Object.values(filters).some(v => v !== '')) && (
+              <button onClick={clearFilters} className="ml-2 text-teal hover:underline">
+                Clear filters
+              </button>
+            )}
+          </div>
+
+          {/* Stock List */}
+          <div className="space-y-3 mb-6 max-h-[400px] overflow-y-auto">
+            {filteredStocks.length === 0 ? (
+              <div className="text-center py-8 text-navy-light">
+                No stocks match your criteria. Try adjusting your filters.
+              </div>
+            ) : (
+              filteredStocks.map(stock => {
+                const isSelected = currentSelections.find(s => s.ticker === stock.ticker);
+                const isDisabled = !isSelected && currentSelections.length >= config.stocksPerCategory;
+                
+                return (
+                  <button
+                    key={stock.ticker}
+                    onClick={() => handleStockSelect(stock)}
+                    disabled={isDisabled}
+                    className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
+                      isSelected 
+                        ? 'border-teal bg-teal/10' 
+                        : isDisabled
+                          ? 'border-cream-dark opacity-50 cursor-not-allowed'
+                          : 'border-cream-dark hover:border-teal/50'
+                    }`}
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                      <div className="min-w-0">
+                        <span className="font-bold text-navy text-lg">{stock.ticker}</span>
+                        <span className="text-navy-light ml-2 text-sm truncate">{stock.name}</span>
+                      </div>
+                      <div className="flex flex-wrap gap-3 text-xs md:text-sm">
+                        <div className="bg-cream px-2 py-1 rounded">
+                          <span className="text-navy-light">Price: </span>
+                          <span className="font-semibold text-navy">${stock.priceStart.toFixed(2)}</span>
+                        </div>
+                        <div className="bg-cream px-2 py-1 rounded">
+                          <span className="text-navy-light">P/E: </span>
+                          <span className="font-semibold text-navy">{stock.pe}</span>
+                        </div>
+                        <div className="bg-cream px-2 py-1 rounded">
+                          <span className="text-navy-light">Beta: </span>
+                          <span className="font-semibold text-navy">{stock.beta}</span>
+                        </div>
+                        <div className="bg-cream px-2 py-1 rounded">
+                          <span className="text-navy-light">Div: </span>
+                          <span className="font-semibold text-navy">{stock.dividendYield}%</span>
+                        </div>
+                        <div className="bg-cream px-2 py-1 rounded hidden md:block">
+                          <span className="text-navy-light">Cap: </span>
+                          <span className="font-semibold text-navy">{stock.marketCap}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })
+            )}
           </div>
 
           <button
@@ -493,8 +717,8 @@ const StockSimulation = () => {
         {/* Main Result */}
         <div className={`rounded-2xl p-8 text-center ${isProfit ? 'bg-sage/20' : 'bg-coral/20'}`}>
           <p className="text-navy-light mb-2">
-            {results.strategy === 'dca'
-              ? `Your $${config.dcaMonthly}/month since ${config.year} (${results.totalInvested.toLocaleString(undefined, { maximumFractionDigits: 0 })} total) would now be worth`
+            {results.strategy === 'dca' 
+              ? `Your $${config.dcaMonthly}/month since ${config.year} ($${results.totalInvested.toLocaleString(undefined, { maximumFractionDigits: 0 })} total) would now be worth`
               : `Your $${results.totalInvested.toLocaleString()} invested in ${config.year} would now be worth`
             }
           </p>
@@ -603,7 +827,8 @@ const StockSimulation = () => {
               setSelectedCategories([]);
               setSelectedStocks({});
               setCurrentCategoryIndex(0);
-              setSimulationResult(null);
+              setSearchQuery('');
+              setFilters({ peMin: '', peMax: '', betaMin: '', betaMax: '', dividendMin: '', dividendMax: '' });
             }}
             className="bg-navy text-white px-8 py-3 rounded-xl font-semibold hover:bg-navy-light transition-colors"
           >
