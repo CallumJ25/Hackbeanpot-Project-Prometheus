@@ -21,6 +21,11 @@ venv/
 .coverage
 htmlcov/
 .pytest_cache/
+.mypy_cache/
+
+# Claude / AI tools
+.claude/
+Roo-Code/
 
 # IDE
 .vscode/
