@@ -21,6 +21,10 @@ venv/
 .coverage
 htmlcov/
 .pytest_cache/
+.mypy_cache/
+
+# Claude
+.claude/
 
 # IDE
 .vscode/
