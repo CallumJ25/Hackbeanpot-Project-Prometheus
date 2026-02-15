@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import { Storage } from './utils';
 import { metrics, psychologyTopics, beginnerMistakes } from './educationalData';
@@ -11,7 +11,8 @@ import Module2 from './pages/Module2';
 import Module3 from './pages/Module3';
 import Simulation from './pages/Simulation';
 import Conclusion from './pages/Conclusion';
-import Auth from './pages/Auth';
+import SignInModal from './pages/SignInModal';
+import SignUpModal from './pages/SignUpModal';
 import Dashboard from './pages/Dashboard';
 
 function ScrollToTop() {
@@ -60,22 +61,47 @@ function App() {
   };
 
   const [session, setSession] = useState(null);
+  const [signInModalOpen, setSignInModalOpen] = useState(false);
+  const [signUpModalOpen, setSignUpModalOpen] = useState(false);
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
     });
-
-    // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
-
     return () => subscription.unsubscribe();
   }, []);
+
+  // When visiting /login, open sign-in modal and go home
+  useEffect(() => {
+    if (pathname === '/login') {
+      setSignInModalOpen(true);
+      setSignUpModalOpen(false);
+      navigate('/', { replace: true });
+    }
+  }, [pathname, navigate]);
+
+  const showSignInModal = signInModalOpen || (pathname === '/dashboard' && !session);
+  const closeSignInModal = () => {
+    setSignInModalOpen(false);
+    if (pathname === '/dashboard' && !session) navigate('/');
+  };
+  const openSignUpModal = () => {
+    setSignInModalOpen(false);
+    setSignUpModalOpen(true);
+  };
+  const closeSignUpModal = () => setSignUpModalOpen(false);
+  const onAuthSuccess = () => {
+    setSignInModalOpen(false);
+    setSignUpModalOpen(false);
+    if (pathname === '/dashboard' && !session) navigate('/');
+  };
 
   return (
     <div className="min-h-screen bg-cream">
@@ -87,8 +113,20 @@ function App() {
         totalAnswered={totalAnswered}
         resetProgress={resetProgress}
         quizScores={quizScores}
+        session={session}
+        onOpenAuth={() => setSignInModalOpen(true)}
       />
-      
+      <SignInModal
+        isOpen={showSignInModal}
+        onClose={closeSignInModal}
+        onSuccess={onAuthSuccess}
+        onOpenSignUp={openSignUpModal}
+      />
+      <SignUpModal
+        isOpen={signUpModalOpen}
+        onClose={closeSignUpModal}
+        onSuccess={onAuthSuccess}
+      />
       <Routes>
         <Route path="/" element={<Home totalQuizzes={totalQuizzes} />} />
         <Route path="/module/1" element={
@@ -119,9 +157,9 @@ function App() {
             totalAnswered={totalAnswered}
           />
         } />
-        <Route path="/login" element={<Auth />} />
+        <Route path="/login" element={null} />
         <Route path="/dashboard" element={
-          session ? <Dashboard session={session} /> : <Auth />
+          session ? <Dashboard session={session} /> : null
         } />
       </Routes>
     </div>
