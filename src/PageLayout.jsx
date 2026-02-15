@@ -152,7 +152,7 @@ export const TopNav = ({ soundEnabled, setSoundEnabled, totalCorrect, totalAnswe
           onClick={resetProgress}
           >
           <Link 
-            to="/module/1"
+            to="./login"
             className="bg-white/90 backdrop-blur px-10 py-2 rounded-full shadow-lg hover:bg-white transition-colors text-navy-light text-center"
           >
             Log In
