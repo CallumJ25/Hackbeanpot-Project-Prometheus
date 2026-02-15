@@ -43,9 +43,9 @@ function App() {
     Storage.save('soundEnabled', soundEnabled);
   }, [soundEnabled]);
 
-  const handleQuizComplete = (quizId, correct) => {
+  const handleQuizComplete = (quizId, correct, selectedIndex) => {
     if (quizScores[quizId] === undefined) {
-      setQuizScores(prev => ({ ...prev, [quizId]: correct }));
+      setQuizScores(prev => ({ ...prev, [quizId]: { correct, selectedIndex } }));
       setTotalAnswered(prev => prev + 1);
       if (correct) setTotalCorrect(prev => prev + 1);
     }

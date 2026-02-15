@@ -148,7 +148,7 @@ export const FadeInSection = ({ children, className = "", delay = 0 }) => {
   );
 };
 
-export const Quiz = ({ quiz, onComplete, soundEnabled = true, answered = false, wasCorrect = false, learnMoreUrl = null, topicContext = null }) => {
+export const Quiz = ({ quiz, onComplete, soundEnabled = true, answered = false, wasCorrect = false, savedSelectedIndex = null, learnMoreUrl = null, topicContext = null }) => {
   const [selected, setSelected] = useState(null);
   const [showResult, setShowResult] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
@@ -156,13 +156,13 @@ export const Quiz = ({ quiz, onComplete, soundEnabled = true, answered = false, 
   // Reset local state when answered prop changes (e.g., when reset is pressed)
   useEffect(() => {
     if (answered) {
-      setSelected(wasCorrect ? quiz.correct : -1);
+      setSelected(savedSelectedIndex !== null && savedSelectedIndex !== undefined ? savedSelectedIndex : (wasCorrect ? quiz.correct : null));
       setShowResult(true);
     } else {
       setSelected(null);
       setShowResult(false);
     }
-  }, [answered, wasCorrect, quiz.correct]);
+  }, [answered, wasCorrect, savedSelectedIndex, quiz.correct]);
 
   const handleSelect = (index) => {
     if (showResult) return;
@@ -174,7 +174,7 @@ export const Quiz = ({ quiz, onComplete, soundEnabled = true, answered = false, 
       isCorrect ? SoundEffects.correct() : SoundEffects.incorrect();
     }
     
-    setTimeout(() => onComplete && onComplete(isCorrect), 500);
+    setTimeout(() => onComplete && onComplete(isCorrect, index), 500);
   };
 
   return (
