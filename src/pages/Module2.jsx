@@ -72,13 +72,24 @@ function Module2({ onQuizComplete, soundEnabled, quizScores }) {
                   </div>
 
                   <div className="bg-white rounded-2xl p-6 md:p-8">
-                    <Quiz 
-                      quiz={topic.quiz} 
+                    <Quiz
+                      quiz={topic.quiz}
                       onComplete={(correct) => onQuizComplete(quizId, correct)}
                       soundEnabled={soundEnabled}
                       answered={isAnswered}
                       wasCorrect={wasCorrect}
                       learnMoreUrl={topic.learnMoreUrl}
+                      topicContext={[
+                        `Topic: ${topic.name} — ${topic.fullName}`,
+                        `Scenario: ${topic.scenario}`,
+                        `The Danger: ${topic.danger}`,
+                        `Real Example: ${topic.realExample}`,
+                        `The Antidote: ${topic.antidote}`,
+                        `Quiz Question: ${topic.quiz.question}`,
+                        `Quiz Options:\n${topic.quiz.options.map((o, i) => `  ${String.fromCharCode(65 + i)}. ${o}`).join('\n')}`,
+                        `Correct Answer: ${String.fromCharCode(65 + topic.quiz.correct)}. ${topic.quiz.options[topic.quiz.correct]}`,
+                        `Explanation: ${topic.quiz.explanation}`,
+                      ].join('\n')}
                     />
                   </div>
                 </div>
