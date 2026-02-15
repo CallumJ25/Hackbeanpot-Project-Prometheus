@@ -37,7 +37,8 @@ function Module1({ onQuizComplete, soundEnabled, quizScores }) {
             const quizId = `metric-${index}`;
             const isAnswered = quizScores[quizId] !== undefined;
             const isVisible = index <= answeredCount;
-            const wasCorrect = quizScores[quizId] === true;
+            const wasCorrect = quizScores[quizId]?.correct === true;
+            const savedSelectedIndex = quizScores[quizId]?.selectedIndex;
 
             if (!isVisible) return null;
 
@@ -86,10 +87,11 @@ function Module1({ onQuizComplete, soundEnabled, quizScores }) {
 
                   <Quiz
                     quiz={metric.quiz}
-                    onComplete={(correct) => onQuizComplete(quizId, correct)}
+                    onComplete={(correct, selectedIndex) => onQuizComplete(quizId, correct, selectedIndex)}
                     soundEnabled={soundEnabled}
                     answered={isAnswered}
                     wasCorrect={wasCorrect}
+                    savedSelectedIndex={savedSelectedIndex}
                     learnMoreUrl={metric.learnMoreUrl}
                     topicContext={[
                       `Topic: ${metric.name} — ${metric.subtitle}`,

@@ -37,7 +37,8 @@ function Module2({ onQuizComplete, soundEnabled, quizScores }) {
             const quizId = `psych-${index}`;
             const isAnswered = quizScores[quizId] !== undefined;
             const isVisible = index <= answeredCount;
-            const wasCorrect = quizScores[quizId] === true;
+            const wasCorrect = quizScores[quizId]?.correct === true;
+            const savedSelectedIndex = quizScores[quizId]?.selectedIndex;
 
             if (!isVisible) return null;
 
@@ -74,10 +75,11 @@ function Module2({ onQuizComplete, soundEnabled, quizScores }) {
                   <div className="bg-white rounded-2xl p-6 md:p-8">
                     <Quiz
                       quiz={topic.quiz}
-                      onComplete={(correct) => onQuizComplete(quizId, correct)}
+                      onComplete={(correct, selectedIndex) => onQuizComplete(quizId, correct, selectedIndex)}
                       soundEnabled={soundEnabled}
                       answered={isAnswered}
                       wasCorrect={wasCorrect}
+                      savedSelectedIndex={savedSelectedIndex}
                       learnMoreUrl={topic.learnMoreUrl}
                       topicContext={[
                         `Topic: ${topic.name} — ${topic.fullName}`,
