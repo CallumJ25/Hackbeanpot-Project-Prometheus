@@ -8,7 +8,7 @@
 2. Open terminal in this folder
 3. Run: `npm install --legacy-peer-deps`
 4. Run: `npm run dev`
-5. Open: `http://localhost:5173`
+5. Open: Open the following link on your local machine's browser
 
 ## Pages
 

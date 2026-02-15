@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
+import { supabase } from './supabaseClient'; // Add this import
 
 const modules = [
   { path: '/', name: 'Home', short: '🏠', questions: 0, prefix: null },
@@ -87,6 +88,10 @@ export const TopNav = ({ soundEnabled, setSoundEnabled, totalCorrect, totalAnswe
     return true;
   };
 
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+  };
+
   return (
     <>
       {/* Vertical sidebar - desktop */}
@@ -149,23 +154,31 @@ export const TopNav = ({ soundEnabled, setSoundEnabled, totalCorrect, totalAnswe
       {/* Settings - top right */}
       <div className="fixed top-4 right-4 z-50 flex items-center gap-2 md:right-20">
         {session ? (
-          <Link
-            to="/dashboard"
-            className="bg-white/90 backdrop-blur px-10 py-2 rounded-full shadow-lg hover:bg-white transition-colors text-navy-light text-center"
-          >
-            Dashboard
-          </Link>
+          <>
+            <Link
+              to="/dashboard"
+              className="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-2 rounded-full shadow-lg transition-all duration-300 font-semibold hover:scale-105"
+            >
+              Leaderboard
+            </Link>
+            <button
+              onClick={handleSignOut}
+              className="bg-white/90 backdrop-blur px-6 py-2 rounded-full shadow-lg hover:bg-red-50 transition-all duration-300 text-red-600 font-semibold hover:scale-105"
+            >
+              Sign Out
+            </button>
+          </>
         ) : (
           <button
             type="button"
             onClick={onOpenAuth}
-            className="bg-white/90 backdrop-blur px-10 py-2 rounded-full shadow-lg hover:bg-white transition-colors text-navy-light"
+            className="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-2 rounded-full shadow-lg transition-all duration-300 font-semibold hover:scale-105"
           >
-            Log In
+            Sign In
           </button>
         )}
         {totalAnswered > 0 && (
-          <div className="bg-white/90 backdrop-blur px-3 py-2 rounded-full shadow-lg text-sm text-navy">
+          <div className="bg-white/90 backdrop-blur px-3 py-2 rounded-full shadow-lg text-sm text-navy font-semibold">
             {totalCorrect}/{totalAnswered}
           </div>
         )}
@@ -183,7 +196,7 @@ export const TopNav = ({ soundEnabled, setSoundEnabled, totalCorrect, totalAnswe
             >
               <Link 
                 to="/module/1"
-                className="bg-white/90 backdrop-blur px-10 py-2 rounded-full shadow-lg hover:bg-white transition-colors text-navy-light text-center"
+                className="bg-white/90 backdrop-blur px-6 py-2 rounded-full shadow-lg hover:bg-white transition-colors text-navy-light text-center font-semibold"
               >
                 Reset
               </Link>
