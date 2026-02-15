@@ -40,7 +40,9 @@ function Home({ totalQuizzes }) {
             <p className="text-xl md:text-2xl text-cream max-w-2xl ml-auto mb-12 text-right">
               Around 62% of Gen Z is not finanically literate.
               
-              <span className= "block text-emerald-400"> Together, we can change that.</span>
+              <span className= "block text-emerald-400"> Together, we can change that. </span>
+              <span className= "block text-cream"> For free.</span>
+
             </p>
           </FadeInSection>
           
@@ -56,11 +58,12 @@ function Home({ totalQuizzes }) {
 
           <FadeInSection delay={0.8}>
             <div className="mt-20 flex flex-wrap justify-end gap-8 text-white">
-              <div>4 Modules</div>
-              <div>{totalQuizzes} Quizzes</div>
+              <div>3 Modules</div>
+              <div>{totalQuizzes} Questions</div>
               <div>~30 min</div>
             </div>
           </FadeInSection>
+
         </div>
       </section>
 
@@ -101,9 +104,11 @@ function Home({ totalQuizzes }) {
               <p className="text-xl text-cream/80 mb-8">
                 Financial education is often gatekept behind expensive courses, confusing jargon, or inaccessible institutions. 
                 Yet understanding money is fundamental to building a secure future.
+              
               </p>
               <p className="text-amber font-semibold text-lg">
-                We believe everyone deserves the knowledge to make informed financial decisions.
+                We want to offer the tools to understanding finances for free to a generation that needs it with a value based approach. 
+                Not one based on vibes or emotions.
               </p>
             </div>
           </FadeInSection>

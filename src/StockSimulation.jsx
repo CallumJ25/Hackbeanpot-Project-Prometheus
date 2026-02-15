@@ -12,19 +12,34 @@ function formatMarketCap(value) {
 }
 
 const StockSimulation = () => {
-  const [step, setStep] = useState('setup');
-  const [config, setConfig] = useState({
-    year: SIMULATION_CONFIG.defaultYear,
-    investment: SIMULATION_CONFIG.defaultInvestment,
-    customInvestment: '',
-    numCategories: 3,
-    stocksPerCategory: 2,
-    investmentStrategy: 'lump',
-    dcaMonthly: 500,
+  // Load saved state from localStorage
+  const [step, setStep] = useState(() => 
+    localStorage.getItem('sim_step') || 'setup'
+  );
+  const [config, setConfig] = useState(() => {
+    const saved = localStorage.getItem('sim_config');
+    return saved ? JSON.parse(saved) : {
+      year: SIMULATION_CONFIG.defaultYear,
+      investment: SIMULATION_CONFIG.defaultInvestment,
+      customInvestment: '',
+      numCategories: 3,
+      stocksPerCategory: 2,
+      investmentStrategy: 'lump',
+      dcaMonthly: 500,
+    };
   });
-  const [selectedCategories, setSelectedCategories] = useState([]);
-  const [selectedStocks, setSelectedStocks] = useState({});
-  const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
+  const [selectedCategories, setSelectedCategories] = useState(() => {
+    const saved = localStorage.getItem('sim_categories');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [selectedStocks, setSelectedStocks] = useState(() => {
+    const saved = localStorage.getItem('sim_stocks');
+    return saved ? JSON.parse(saved) : {};
+  });
+  const [currentCategoryIndex, setCurrentCategoryIndex] = useState(() => {
+    const saved = localStorage.getItem('sim_categoryIndex');
+    return saved ? parseInt(saved) : 0;
+  });
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({ peMin: '', peMax: '', betaMin: '', betaMax: '', dividendMin: '', dividendMax: '' });
@@ -34,10 +49,39 @@ const StockSimulation = () => {
   const [statsLoading, setStatsLoading] = useState(false);
 
   // Simulation result from /simulate lambda
-  const [simulationResult, setSimulationResult] = useState(null);
+  const [simulationResult, setSimulationResult] = useState(() => {
+    const saved = localStorage.getItem('sim_result');
+    return saved ? JSON.parse(saved) : null;
+  });
   const [simulationLoading, setSimulationLoading] = useState(false);
   const [simulationError, setSimulationError] = useState(null);
 
+  // Save to localStorage whenever state changes
+  useEffect(() => {
+    localStorage.setItem('sim_step', step);
+  }, [step]);
+
+  useEffect(() => {
+    localStorage.setItem('sim_config', JSON.stringify(config));
+  }, [config]);
+
+  useEffect(() => {
+    localStorage.setItem('sim_categories', JSON.stringify(selectedCategories));
+  }, [selectedCategories]);
+
+  useEffect(() => {
+    localStorage.setItem('sim_stocks', JSON.stringify(selectedStocks));
+  }, [selectedStocks]);
+
+  useEffect(() => {
+    localStorage.setItem('sim_categoryIndex', currentCategoryIndex.toString());
+  }, [currentCategoryIndex]);
+
+  useEffect(() => {
+    if (simulationResult) {
+      localStorage.setItem('sim_result', JSON.stringify(simulationResult));
+    }
+  }, [simulationResult]);
   // Gemini AI analysis
   const [aiAnalysis, setAiAnalysis] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
@@ -161,6 +205,32 @@ const StockSimulation = () => {
         setSimulationLoading(false);
       }
     }
+  };
+
+  const handleReset = () => {
+    setStep('setup');
+    setSelectedCategories([]);
+    setSelectedStocks({});
+    setCurrentCategoryIndex(0);
+    setSearchQuery('');
+    setFilters({ peMin: '', peMax: '', betaMin: '', betaMax: '', dividendMin: '', dividendMax: '' });
+    setConfig({
+      year: SIMULATION_CONFIG.defaultYear,
+      investment: SIMULATION_CONFIG.defaultInvestment,
+      customInvestment: '',
+      numCategories: 3,
+      stocksPerCategory: 2,
+      investmentStrategy: 'lump',
+      dcaMonthly: 500,
+    });
+    setSimulationResult(null);
+    // Clear localStorage
+    localStorage.removeItem('sim_step');
+    localStorage.removeItem('sim_config');
+    localStorage.removeItem('sim_categories');
+    localStorage.removeItem('sim_stocks');
+    localStorage.removeItem('sim_categoryIndex');
+    localStorage.removeItem('sim_result');
   };
 
   const getResults = () => {
@@ -833,7 +903,7 @@ Keep it encouraging, clear, and under 300 words. Use simple language, no jargon.
             <p className="text-navy font-semibold text-lg">Failed to load simulation</p>
             <p className="text-navy-light mt-2">{simulationError || 'Unknown error'}</p>
             <button
-              onClick={() => { setStep('setup'); setSelectedCategories([]); setSelectedStocks({}); setCurrentCategoryIndex(0); }}
+              onClick={handleReset}
               className="mt-6 bg-navy text-white px-6 py-2 rounded-xl font-semibold hover:bg-navy-light transition-colors"
             >
               Try Again
@@ -973,15 +1043,7 @@ Keep it encouraging, clear, and under 300 words. Use simple language, no jargon.
         {/* Try Again */}
         <div className="text-center">
           <button
-            onClick={() => {
-              setStep('setup');
-              setSelectedCategories([]);
-              setSelectedStocks({});
-              setCurrentCategoryIndex(0);
-              setSearchQuery('');
-              setFilters({ peMin: '', peMax: '', betaMin: '', betaMax: '', dividendMin: '', dividendMax: '' });
-              setConfig(prev => ({ ...prev, customInvestment: '' }));
-            }}
+            onClick={handleReset}
             className="bg-navy text-white px-8 py-3 rounded-xl font-semibold hover:bg-navy-light transition-colors"
           >
             Try Different Picks

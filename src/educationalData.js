@@ -4,7 +4,7 @@ export const metrics = [
     name: "Market Cap",
     subtitle: "How Big Is This Company?",
     emoji: "🏢",
-    description: "Market capitalization is the total value of a company's shares. Multiply the stock price by the total number of shares outstanding.",
+    description: "Market capitalization (market cap) is the total value of a company's shares. Multiply the stock price by the total number of shares.",
     learnMoreUrl: "https://www.investopedia.com/terms/m/marketcapitalization.asp",
     formula: "Market Cap = Stock Price × Total Shares",
     example: "If a company has 1 million shares at $50 each, its market cap is $50 million.",
@@ -13,7 +13,7 @@ export const metrics = [
       { name: "Mid Cap", range: "$2-10 billion", description: "Growing companies, moderate risk" },
       { name: "Small Cap", range: "< $2 billion", description: "Smaller companies, higher risk/reward" }
     ],
-    keyTakeaway: "Market cap tells you the company's size. Larger isn't automatically better—it depends on what you're looking for.",
+    keyTakeaway: "Market cap tells you the company's size. Larger isn't automatically better, it depends on what you're looking for.",
     quiz: {
       question: "A company has 2 million shares priced at $25 each. What's its market cap?",
       options: ["$25 million", "$50 million", "$75 million", "$100 million"],
@@ -29,13 +29,13 @@ export const metrics = [
     learnMoreUrl: "https://www.investopedia.com/terms/p/price-earningsratio.asp",
     formula: "P/E = Stock Price ÷ Earnings Per Share",
     example: "A stock at $100 with $5 EPS has a P/E of 20. You're paying $20 for every $1 of earnings.",
-    insight: "A low P/E might mean undervalued—or that the company has problems. A high P/E might mean overvalued—or that investors expect strong growth. Context matters.",
+    insight: "A low P/E means the company is either undervalued or that it has problems. A high P/E might mean that the company is overvalued, or that investors expect strong growth.",
     categories: [
       { name: "Low P/E", range: "< 15", description: "Potentially undervalued or troubled" },
       { name: "Average P/E", range: "15-25", description: "Fairly valued for most industries" },
       { name: "High P/E", range: "> 25", description: "Growth expectations or overvalued" }
     ],
-    keyTakeaway: "P/E is a starting point, not a verdict. Compare within the same industry and understand why it's high or low.",
+    keyTakeaway: "P/E is a starting point. You could compare within the same industry and understand why it's high or low.",
     quiz: {
       question: "A tech startup has a P/E of 80 while an established utility company has a P/E of 12. What's the most likely explanation?",
       options: [
@@ -49,20 +49,20 @@ export const metrics = [
     }
   },
   {
-    name: "EPS",
-    subtitle: "Earnings Per Share",
+    name: "EPS (Earnings Per Share)",
+    subtitle: "How much are they profitting?",
     emoji: "💵",
     description: "EPS shows how much profit a company makes for each share of stock. It's a key indicator of profitability.",
     learnMoreUrl: "https://www.investopedia.com/terms/e/eps.asp",
     formula: "EPS = (Net Income - Dividends) ÷ Total Shares",
     example: "If a company earns $10 million and has 2 million shares, EPS = $5. Each share 'earned' $5.",
-    insight: "Growing EPS over time is generally positive. Declining EPS could indicate trouble. But watch for companies artificially boosting EPS through stock buybacks.",
-    keyTakeaway: "Look at EPS trends over multiple years, not just one quarter. Consistent growth matters more than a single good number.",
+    insight: "Growing EPS over time is generally positive. Declining EPS could indicate trouble. But be careful for companies artificially boosting EPS through stock buybacks.",
+    keyTakeaway: "Look at EPS trends over multiple years, not just over a single quarter. Consistent growth > a single good number.",
     quiz: {
       question: "Company A has EPS of $3 this year, up from $2 last year. Company B has EPS of $5 this year, down from $7 last year. Which is more concerning?",
       options: [
-        "Company A—lower absolute EPS",
-        "Company B—declining EPS trend",
+        "Company A, lower absolute EPS",
+        "Company B, declining EPS trend",
         "Both are equally concerning",
         "Neither is concerning"
       ],
@@ -83,7 +83,7 @@ export const metrics = [
       { name: "Market Beta", range: "= 1", description: "Moves with the market" },
       { name: "High Beta", range: "> 1", description: "More volatile (tech, growth stocks)" }
     ],
-    keyTakeaway: "High beta means higher potential returns but also higher risk. Match your investments to your risk tolerance and timeline.",
+    keyTakeaway: "High beta means higher potential returns but also higher risk.",
     quiz: {
       question: "You're retiring in 2 years and can't afford big losses. Which beta would be most appropriate?",
       options: ["Beta of 0.5", "Beta of 1.0", "Beta of 1.5", "Beta of 2.0"],
@@ -99,19 +99,19 @@ export const metrics = [
     learnMoreUrl: "https://www.investopedia.com/terms/d/dividendyield.asp",
     formula: "Dividend Yield = Annual Dividends ÷ Stock Price × 100",
     example: "A $100 stock paying $4/year in dividends has a 4% yield. You earn 4% annually just for holding it.",
-    insight: "High yields can be attractive, but extremely high yields (8%+) might signal trouble—the company may not sustain them, or the stock price crashed.",
+    insight: "High yields can be attractive, but extremely high yields (8%+) might signal trouble. The company may not sustain them, or the stock price crashed.",
     categories: [
       { name: "No Dividend", range: "0%", description: "Growth companies reinvesting profits" },
       { name: "Low Yield", range: "1-2%", description: "Balanced approach" },
       { name: "Moderate Yield", range: "2-4%", description: "Income-focused stocks" },
-      { name: "High Yield", range: "4%+", description: "Strong income—verify sustainability" }
+      { name: "High Yield", range: "4%+", description: "Strong income-verify sustainability" }
     ],
     keyTakeaway: "Don't chase yield blindly. Sustainable dividends from healthy companies beat high yields from struggling ones.",
     quiz: {
       question: "Stock A has a 2% yield and has increased dividends for 25 years. Stock B has an 8% yield but cut dividends last year. Which is generally safer for income?",
       options: [
-        "Stock B—higher current yield",
-        "Stock A—proven dividend history",
+        "Stock B, higher current yield",
+        "Stock A, proven dividend history",
         "They're equally safe",
         "Neither is safe for income"
       ],
@@ -214,14 +214,14 @@ export const psychologyTopics = [
     learnMoreUrl: "https://www.investopedia.com/articles/investing/030515/how-avoid-being-overconfident-investor.asp",
     scenario: "You made money on a few trades. You start to think you have a 'talent' for picking stocks. You increase your position sizes and trade more frequently.",
     danger: "Early success often comes from luck, not skill. Overconfidence leads to excessive trading, bigger bets, and eventually bigger losses.",
-    realExample: "Studies show that the most active traders typically underperform passive investors by 6-7% annually—largely due to overconfidence.",
+    realExample: "Studies show that the most active traders typically underperform passive investors by 6-7% annually, which is largely due to overconfidence.",
     antidote: "Track all your trades honestly, including losses. Compare your returns to simply buying an index fund. Most professionals can't beat the market consistently.",
     quiz: {
       question: "You've made money on 5 trades in a row. What's the most rational conclusion?",
       options: [
         "You have natural talent for stock picking",
-        "Your strategy is proven—increase position sizes",
-        "Could be skill, could be luck—need more data",
+        "Your strategy is proven, increase position sizes",
+        "Could be skill, could be luck, need more data",
         "You should quit your job and trade full-time"
       ],
       correct: 2,
@@ -251,7 +251,7 @@ export const beginnerMistakes = [
         "$10,000 in a total market index fund"
       ],
       correct: 3,
-      explanation: "An index fund holds hundreds of stocks across all sectors—maximum diversification with minimum effort."
+      explanation: "An index fund holds hundreds of stocks across all sectors, maximum diversification with minimum effort."
     }
   },
   {
@@ -267,8 +267,8 @@ export const beginnerMistakes = [
     quiz: {
       question: "The market dropped 10%. You have cash to invest. What do most experts recommend?",
       options: [
-        "Wait for it to drop more—catch the bottom",
-        "Invest now—you can't predict the bottom",
+        "Wait for it to drop more, catch the bottom",
+        "Invest now, you can't predict the bottom",
         "Wait until it starts recovering to confirm the trend",
         "Invest half now, half if it drops further"
       ],
@@ -283,21 +283,21 @@ export const beginnerMistakes = [
     learnMoreUrl: "https://www.investopedia.com/articles/basics/04/050704.asp",
     mistake: "Making investment decisions based on fear, greed, or excitement rather than logic.",
     whyItHappens: "Markets trigger strong emotions. Red days feel terrifying. Green days feel euphoric.",
-    consequence: "Emotional traders buy at peaks (excitement) and sell at bottoms (fear)—the opposite of 'buy low, sell high.'",
+    consequence: "Emotional traders buy at peaks (excitement) and sell at bottoms (fear).",
     realExample: "In 2020, investors who panic-sold in March and waited to 'feel safe' missed a 70%+ recovery over the next year.",
-    solution: "Write down your investment plan when calm. Follow it mechanically. Remove emotion from execution.",
+    solution: "It could be useful to write down your investment plan when calm. Follow it mechanically. Remove emotion from execution.",
     quiz: {
       question: "Your portfolio drops 20% in a week. You're panicking. What's the best immediate action?",
       options: [
         "Sell everything to stop the bleeding",
         "Buy more while it's cheap",
-        "Do nothing—review your plan when calm",
+        "Do nothing, review your plan when calm",
         "Call your broker for advice"
       ],
       correct: 2,
       explanation: "Panic is the worst state for decision-making. Step back, breathe, and review your plan with a clear head."
     }
-  },
+  },                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
   {
     name: "Ignoring Fees",
     emoji: "💸",
@@ -311,8 +311,8 @@ export const beginnerMistakes = [
     quiz: {
       question: "Fund A returns 8%/year with 1.5% fees. Fund B returns 7%/year with 0.1% fees. Over 30 years, which likely performs better for you?",
       options: [
-        "Fund A—higher returns before fees",
-        "Fund B—lower fees compound to bigger savings",
+        "Fund A, higher returns before fees",
+        "Fund B, lower fees compound to bigger savings",
         "They're roughly equal",
         "Impossible to determine"
       ],
@@ -333,7 +333,7 @@ export const beginnerMistakes = [
     quiz: {
       question: "You have $20,000. You might need $5,000 for a car repair in 6 months. How should you allocate?",
       options: [
-        "Invest all $20,000—you can sell if needed",
+        "Invest all $20,000, you can sell if needed",
         "Keep $5,000 in savings, invest $15,000",
         "Keep all $20,000 in savings until the car is fixed",
         "Invest $18,000, keep $2,000 for minor emergencies"

@@ -16,11 +16,11 @@ function Module3({ onQuizComplete, soundEnabled, quizScores }) {
   const allAnswered = answeredCount >= beginnerMistakes.length;
 
   return (
-    <div className="min-h-screen bg-cream pt-20 pb-32 md:pb-12">
+    <div className="min-h-screen bg-coral/80 pt-20 pb-32 md:pb-12">
       <div className="container mx-auto px-6">
         <FadeInSection>
           <div className="text-center mb-16">
-            <span className="inline-block bg-coral/10 text-coral px-4 py-1 rounded-full text-sm font-semibold mb-4">
+            <span className="inline-block bg-cream text-coral px-4 py-1 rounded-full text-sm font-semibold mb-4">
               Module 3
             </span>
             <h1 className="font-display text-3xl md:text-5xl font-bold text-navy mb-4">
@@ -43,7 +43,7 @@ function Module3({ onQuizComplete, soundEnabled, quizScores }) {
 
             return (
               <FadeInSection key={index} delay={0.1}>
-                <div className="bg-white rounded-2xl p-6 md:p-10 shadow-lg border-l-4 border-coral">
+                <div className="bg-cream rounded-2xl p-6 md:p-10 shadow-lg border-l-4 border-coral">
                   <div className="flex items-center gap-3 mb-2">
                     <span className="text-3xl">{mistake.emoji}</span>
                     <div>

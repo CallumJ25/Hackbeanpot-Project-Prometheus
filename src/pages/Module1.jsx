@@ -16,11 +16,11 @@ function Module1({ onQuizComplete, soundEnabled, quizScores }) {
   const allAnswered = answeredCount >= metrics.length;
 
   return (
-    <div className="min-h-screen bg-cream pt-20 pb-32 md:pb-12">
+    <div className="min-h-screen bg-amber/30 pt-20 pb-32 md:pb-12">
       <div className="container mx-auto px-6">
         <FadeInSection>
           <div className="text-center mb-16">
-            <span className="inline-block bg-amber/10 text-amber px-4 py-1 rounded-full text-sm font-semibold mb-4">
+            <span className="inline-block bg-amber text-cream px-4 py-1 rounded-full text-sm font-semibold mb-4">
               Module 1
             </span>
             <h1 className="font-display text-3xl md:text-5xl font-bold text-navy mb-4">
