@@ -130,7 +130,7 @@ export const TopNav = ({ soundEnabled, setSoundEnabled, totalCorrect, totalAnswe
                     {Array.from({ length: mod.questions }).map((_, i) => {
                       const quizKey = `${mod.prefix}-${i}`;
                       const isAnswered = quizScores[quizKey] !== undefined;
-                      const isCorrect = quizScores[quizKey] === true;
+                      const isCorrect = quizScores[quizKey]?.correct === true;
                       
                       return (
                         <div
@@ -238,7 +238,7 @@ export const TopNav = ({ soundEnabled, setSoundEnabled, totalCorrect, totalAnswe
                     {Array.from({ length: mod.questions }).map((_, i) => {
                       const quizKey = `${mod.prefix}-${i}`;
                       const isAnswered = quizScores[quizKey] !== undefined;
-                      const isCorrect = quizScores[quizKey] === true;
+                      const isCorrect = quizScores[quizKey]?.correct === true;
                       
                       return (
                         <div

@@ -37,7 +37,8 @@ function Module3({ onQuizComplete, soundEnabled, quizScores }) {
             const quizId = `mistake-${index}`;
             const isAnswered = quizScores[quizId] !== undefined;
             const isVisible = index <= answeredCount;
-            const wasCorrect = quizScores[quizId] === true;
+            const wasCorrect = quizScores[quizId]?.correct === true;
+            const savedSelectedIndex = quizScores[quizId]?.selectedIndex;
 
             if (!isVisible) return null;
 
@@ -81,10 +82,11 @@ function Module3({ onQuizComplete, soundEnabled, quizScores }) {
 
                   <Quiz
                     quiz={mistake.quiz}
-                    onComplete={(correct) => onQuizComplete(quizId, correct)}
+                    onComplete={(correct, selectedIndex) => onQuizComplete(quizId, correct, selectedIndex)}
                     soundEnabled={soundEnabled}
                     answered={isAnswered}
                     wasCorrect={wasCorrect}
+                    savedSelectedIndex={savedSelectedIndex}
                     learnMoreUrl={mistake.learnMoreUrl}
                     topicContext={[
                       `Topic: ${mistake.name} — ${mistake.saying}`,
