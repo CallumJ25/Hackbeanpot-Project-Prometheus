@@ -44,7 +44,7 @@ export const PageNavigation = ({ prevPath, nextPath, prevLabel, nextLabel, nextD
   );
 };
 
-export const TopNav = ({ soundEnabled, setSoundEnabled, totalCorrect, totalAnswered, resetProgress, quizScores = {} }) => {
+export const TopNav = ({ soundEnabled, setSoundEnabled, totalCorrect, totalAnswered, resetProgress, quizScores = {}, session, onOpenAuth }) => {
   const location = useLocation();
   
   // Count answered questions for a module
@@ -148,16 +148,22 @@ export const TopNav = ({ soundEnabled, setSoundEnabled, totalCorrect, totalAnswe
 
       {/* Settings - top right */}
       <div className="fixed top-4 right-4 z-50 flex items-center gap-2 md:right-20">
-        <button
-          onClick={resetProgress}
-          >
-          <Link 
-            to="./login"
+        {session ? (
+          <Link
+            to="/dashboard"
             className="bg-white/90 backdrop-blur px-10 py-2 rounded-full shadow-lg hover:bg-white transition-colors text-navy-light text-center"
           >
-            Log In
+            Dashboard
           </Link>
-        </button>
+        ) : (
+          <button
+            type="button"
+            onClick={onOpenAuth}
+            className="bg-white/90 backdrop-blur px-10 py-2 rounded-full shadow-lg hover:bg-white transition-colors text-navy-light"
+          >
+            Log In
+          </button>
+        )}
         {totalAnswered > 0 && (
           <div className="bg-white/90 backdrop-blur px-3 py-2 rounded-full shadow-lg text-sm text-navy">
             {totalCorrect}/{totalAnswered}

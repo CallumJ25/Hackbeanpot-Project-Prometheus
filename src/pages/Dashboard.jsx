@@ -14,11 +14,11 @@ function Dashboard({ session }) {
 
   async function loadUserData() {
     try {
-      // Create user in database if doesn't exist
-      await createUserAndPortfolio(session.user.email);
-      
-      // Get full user data
-      const data = await getUserData(session.user.email);
+      const email = session.user.email;
+      // Ensure user row exists (optional username for legacy auth users)
+      const username = session.user.user_metadata?.username;
+      await createUserAndPortfolio(email, username || undefined);
+      const data = await getUserData(email);
       setUserData(data);
     } catch (error) {
       console.error('Error loading user:', error);

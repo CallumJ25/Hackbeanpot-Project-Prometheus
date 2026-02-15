@@ -1,9 +1,30 @@
 import { supabase } from './supabaseClient';
 
-// CREATE USER & PORTFOLIO AFTER SIGNUP
+// Check if username is already taken (for signup validation)
+export async function isUsernameTaken(username) {
+  if (!username || !username.trim()) return true;
+  const { data, error } = await supabase
+    .from('users')
+    .select('id')
+    .eq('username', username.trim())
+    .maybeSingle();
+  if (error) throw error;
+  return !!data;
+}
+
+// CREATE USER & PORTFOLIO AFTER SIGNUP (username required for new signups)
 export async function createUserAndPortfolio(email, username = null) {
   try {
-    // Check if user already exists
+    const displayName = username?.trim() || email.split('@')[0];
+
+    if (username != null && username !== '') {
+      const taken = await isUsernameTaken(username);
+      if (taken) {
+        throw new Error('Username already taken. Please choose another.');
+      }
+    }
+
+    // Check if user already exists by email
     const { data: existingUser } = await supabase
       .from('users')
       .select('*')
@@ -11,7 +32,6 @@ export async function createUserAndPortfolio(email, username = null) {
       .maybeSingle();
 
     if (existingUser) {
-      console.log('User already exists');
       return existingUser;
     }
 
@@ -20,8 +40,8 @@ export async function createUserAndPortfolio(email, username = null) {
       .from('users')
       .insert({
         email: email,
-        username: username || email.split('@')[0],
-        display_name: username || email.split('@')[0]
+        username: displayName,
+        display_name: displayName
       })
       .select()
       .single();
