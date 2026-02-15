@@ -79,13 +79,25 @@ function Module3({ onQuizComplete, soundEnabled, quizScores }) {
                     </div>
                   </div>
 
-                  <Quiz 
-                    quiz={mistake.quiz} 
+                  <Quiz
+                    quiz={mistake.quiz}
                     onComplete={(correct) => onQuizComplete(quizId, correct)}
                     soundEnabled={soundEnabled}
                     answered={isAnswered}
                     wasCorrect={wasCorrect}
                     learnMoreUrl={mistake.learnMoreUrl}
+                    topicContext={[
+                      `Topic: ${mistake.name} — ${mistake.saying}`,
+                      `The Mistake: ${mistake.mistake}`,
+                      `Why It Happens: ${mistake.whyItHappens}`,
+                      `Consequence: ${mistake.consequence}`,
+                      `Real Example: ${mistake.realExample}`,
+                      `Solution: ${mistake.solution}`,
+                      `Quiz Question: ${mistake.quiz.question}`,
+                      `Quiz Options:\n${mistake.quiz.options.map((o, i) => `  ${String.fromCharCode(65 + i)}. ${o}`).join('\n')}`,
+                      `Correct Answer: ${String.fromCharCode(65 + mistake.quiz.correct)}. ${mistake.quiz.options[mistake.quiz.correct]}`,
+                      `Explanation: ${mistake.quiz.explanation}`,
+                    ].join('\n')}
                   />
                 </div>
               </FadeInSection>

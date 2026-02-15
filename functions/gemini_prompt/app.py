@@ -11,6 +11,12 @@ GEMINI_API_URL = (
     'gemini-2.0-flash:generateContent?key={api_key}'
 )
 
+CORS_HEADERS = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+}
+
 
 def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     """
@@ -41,12 +47,14 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         if not instructions or not instructions.strip():
             return {
                 'statusCode': 400,
+                'headers': CORS_HEADERS,
                 'body': json.dumps({'error': 'Missing required field: instructions'})
             }
 
         if not GEMINI_API_KEY:
             return {
                 'statusCode': 500,
+                'headers': CORS_HEADERS,
                 'body': json.dumps({'error': 'GEMINI_API_KEY is not configured'})
             }
 
@@ -83,6 +91,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
 
         return {
             'statusCode': 200,
+            'headers': CORS_HEADERS,
             'body': json.dumps({'output': output})
         }
 
@@ -91,11 +100,13 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         print(f"Gemini API HTTP error {e.code}: {error_body}")
         return {
             'statusCode': e.code,
+            'headers': CORS_HEADERS,
             'body': json.dumps({'error': f'Gemini API error: {error_body}'})
         }
     except Exception as e:
         print(f"Error processing request: {e}")
         return {
             'statusCode': 500,
+            'headers': CORS_HEADERS,
             'body': json.dumps({'error': str(e)})
         }

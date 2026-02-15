@@ -1,5 +1,122 @@
 import { useState, useEffect, useRef } from 'react';
 import { SoundEffects } from './utils';
+import { API_BASE_URL } from './config';
+
+const CHAT_MAX_MESSAGES = 5;
+
+const TopicChat = ({ topicContext }) => {
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [messagesUsed, setMessagesUsed] = useState(0);
+  const scrollContainerRef = useRef(null);
+
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+    }
+  }, [messages, isLoading]);
+
+  const handleSend = async () => {
+    const text = input.trim();
+    if (!text || isLoading || messagesUsed >= CHAT_MAX_MESSAGES) return;
+
+    const newMessages = [...messages, { role: 'user', text }];
+    setMessages(newMessages);
+    setInput('');
+    setIsLoading(true);
+
+    const historyText = newMessages
+      .map(m => `${m.role === 'user' ? 'Student' : 'Educator'}: ${m.text}`)
+      .join('\n\n');
+
+    const prompt = `You are a friendly financial educator helping a beginner learn about investing. Stay focused on the topic below and keep each answer under 120 words.
+
+TOPIC CONTEXT:
+${topicContext}
+
+CONVERSATION:
+${historyText}
+
+Educator:`;
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/gemini`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ instructions: prompt }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setMessages(prev => [...prev, { role: 'assistant', text: data.output }]);
+      setMessagesUsed(prev => prev + 1);
+    } catch {
+      setMessages(prev => [...prev, { role: 'assistant', text: '⚠️ Something went wrong. Please try again.' }]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const remaining = CHAT_MAX_MESSAGES - messagesUsed;
+
+  return (
+    <div className="mt-6 border-2 border-teal/20 rounded-xl overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-2 bg-teal/5 border-b border-teal/20">
+        <span className="font-semibold text-navy text-sm">🤖 Ask Gemini</span>
+        <span className="text-xs text-navy-light">{remaining} message{remaining !== 1 ? 's' : ''} left this session</span>
+      </div>
+      <div ref={scrollContainerRef} className="h-52 overflow-y-auto p-4 space-y-3 bg-white">
+        {messages.length === 0 && (
+          <p className="text-navy-light text-sm text-center pt-8">Ask anything about this topic!</p>
+        )}
+        {messages.map((msg, i) => (
+          <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div className={`max-w-[80%] px-3 py-2 rounded-xl text-sm ${
+              msg.role === 'user'
+                ? 'bg-teal text-white rounded-br-sm'
+                : 'bg-cream text-navy rounded-bl-sm'
+            }`}>
+              {msg.text}
+            </div>
+          </div>
+        ))}
+        {isLoading && (
+          <div className="flex justify-start">
+            <div className="bg-cream text-navy-light px-3 py-2 rounded-xl rounded-bl-sm text-sm animate-pulse">
+              Thinking...
+            </div>
+          </div>
+        )}
+      </div>
+      <div className="p-3 bg-cream-dark border-t border-teal/20">
+        {messagesUsed >= CHAT_MAX_MESSAGES ? (
+          <p className="text-navy-light text-xs text-center py-1">
+            Session limit reached ({CHAT_MAX_MESSAGES} messages). Close and reopen to start fresh.
+          </p>
+        ) : (
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleSend()}
+              placeholder="Ask a question about this topic..."
+              disabled={isLoading}
+              className="flex-1 px-3 py-2 rounded-lg text-sm border border-cream-dark bg-white text-navy focus:border-teal focus:outline-none disabled:opacity-50"
+            />
+            <button
+              onClick={handleSend}
+              disabled={!input.trim() || isLoading}
+              className="px-4 py-2 bg-teal text-white rounded-lg text-sm font-medium hover:bg-teal-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Send
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 export const FadeInSection = ({ children, className = "", delay = 0 }) => {
   const ref = useRef(null);
@@ -31,9 +148,10 @@ export const FadeInSection = ({ children, className = "", delay = 0 }) => {
   );
 };
 
-export const Quiz = ({ quiz, onComplete, soundEnabled = true, answered = false, wasCorrect = false, learnMoreUrl = null }) => {
+export const Quiz = ({ quiz, onComplete, soundEnabled = true, answered = false, wasCorrect = false, learnMoreUrl = null, topicContext = null }) => {
   const [selected, setSelected] = useState(null);
   const [showResult, setShowResult] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
 
   // Reset local state when answered prop changes (e.g., when reset is pressed)
   useEffect(() => {
@@ -65,19 +183,29 @@ export const Quiz = ({ quiz, onComplete, soundEnabled = true, answered = false, 
         <span className="font-display text-lg font-semibold text-navy">
           {answered ? '✓ Completed' : '❓ Check Your Understanding'}
         </span>
-        {learnMoreUrl && (
-          <a
-            href={learnMoreUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-teal hover:text-teal-light text-sm font-medium flex items-center gap-1 transition-colors"
-          >
-            📚 Learn More
-            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-            </svg>
-          </a>
-        )}
+        <div className="flex items-center gap-3">
+          {topicContext && (
+            <button
+              onClick={() => setChatOpen(o => !o)}
+              className={`text-sm font-medium flex items-center gap-1 transition-colors ${chatOpen ? 'text-teal' : 'text-navy-light hover:text-teal'}`}
+            >
+              🤖 Ask Gemini
+            </button>
+          )}
+          {learnMoreUrl && (
+            <a
+              href={learnMoreUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-teal hover:text-teal-light text-sm font-medium flex items-center gap-1 transition-colors"
+            >
+              📚 Learn More
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+            </a>
+          )}
+        </div>
       </div>
       <p className="text-navy mb-6 font-medium">{quiz.question}</p>
       <div className="space-y-3">
@@ -131,6 +259,7 @@ export const Quiz = ({ quiz, onComplete, soundEnabled = true, answered = false, 
           )}
         </div>
       )}
+      {topicContext && chatOpen && <TopicChat topicContext={topicContext} />}
     </div>
   );
 };

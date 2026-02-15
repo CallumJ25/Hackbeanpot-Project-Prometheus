@@ -82,6 +82,11 @@ const StockSimulation = () => {
       localStorage.setItem('sim_result', JSON.stringify(simulationResult));
     }
   }, [simulationResult]);
+  // Gemini AI analysis
+  const [aiAnalysis, setAiAnalysis] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState(null);
+  const [showAiModal, setShowAiModal] = useState(false);
 
   const getAvailableStocks = () => STOCKS_DATA[selectedCategories[currentCategoryIndex]] || [];
 
@@ -313,6 +318,57 @@ const StockSimulation = () => {
       yearsHeld: yearsHeld.toFixed(1),
       strategy: config.investmentStrategy,
     };
+  };
+
+  const handleAiAnalysis = async () => {
+    const results = getResults();
+    if (!results) return;
+
+    setShowAiModal(true);
+    setAiLoading(true);
+    setAiError(null);
+    setAiAnalysis(null);
+
+    const allStocks = Object.values(selectedStocks).flat();
+    const stockLines = results.stockResults.map(s =>
+      `- ${s.ticker} (${s.name}): invested $${s.invested.toLocaleString(undefined, { maximumFractionDigits: 0 })}, now worth $${s.currentValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}, ${s.gainPercent >= 0 ? '+' : ''}${s.gainPercent.toFixed(1)}%`
+    ).join('\n');
+
+    const prompt = `You are a friendly financial educator helping beginners understand their stock portfolio simulation.
+
+The user simulated investing $${results.totalInvested.toLocaleString(undefined, { maximumFractionDigits: 0 })} starting in ${config.year} using a ${results.strategy === 'dca' ? 'dollar-cost averaging' : 'lump sum'} strategy.
+
+Portfolio result: $${results.totalValue.toLocaleString(undefined, { maximumFractionDigits: 0 })} total (${results.totalGainPercent >= 0 ? '+' : ''}${results.totalGainPercent.toFixed(1)}% overall)
+
+Individual stocks:
+${stockLines}
+
+Comparisons:
+- Mattress (no investment): $${results.comparisons.mattress.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+- Savings account: $${results.comparisons.bank.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+- S&P 500 index: $${results.comparisons.sp500.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+
+Please provide a concise, beginner-friendly analysis with:
+1. 3-4 pros of this portfolio/strategy based on the results
+2. 3-4 cons or risks of this portfolio/strategy based on the results
+3. One short takeaway lesson
+
+Keep it encouraging, clear, and under 300 words. Use simple language, no jargon.`;
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/gemini`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ instructions: prompt }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setAiAnalysis(data.output);
+    } catch (err) {
+      setAiError(err.message);
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   // Filter and search stocks — numeric filters use liveStats since stockData has no metrics
@@ -968,6 +1024,22 @@ const StockSimulation = () => {
           </div>
         </div>
 
+        {/* AI Analysis Button */}
+        <div className="text-center">
+          <button
+            onClick={handleAiAnalysis}
+            disabled={aiLoading}
+            className={`px-8 py-3 rounded-xl font-semibold transition-colors ${
+              aiLoading
+                ? 'bg-cream-dark text-navy-light cursor-not-allowed'
+                : 'bg-teal text-white hover:bg-teal-light'
+            }`}
+          >
+            {aiLoading ? 'Analyzing...' : '✨ Get AI Analysis'}
+          </button>
+          <p className="text-navy-light text-sm mt-2">Powered by Gemini — see pros, cons & lessons from your picks</p>
+        </div>
+
         {/* Try Again */}
         <div className="text-center">
           <button
@@ -977,6 +1049,56 @@ const StockSimulation = () => {
             Try Different Picks
           </button>
         </div>
+
+        {/* AI Analysis Modal */}
+        {showAiModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <div
+              className="absolute inset-0 bg-navy/50"
+              onClick={() => setShowAiModal(false)}
+            />
+            {/* Modal */}
+            <div className="relative bg-cream rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto p-8">
+              <button
+                onClick={() => setShowAiModal(false)}
+                className="absolute top-4 right-4 text-navy-light hover:text-navy text-2xl leading-none"
+              >
+                ×
+              </button>
+              <h3 className="font-display text-2xl font-bold text-navy mb-1">✨ AI Portfolio Analysis</h3>
+              <p className="text-navy-light text-sm mb-6">Powered by Gemini</p>
+
+              {aiLoading && (
+                <div className="text-center py-8">
+                  <div className="text-4xl mb-3 animate-bounce">🤖</div>
+                  <p className="text-navy font-semibold">Analyzing your portfolio...</p>
+                  <p className="text-navy-light text-sm mt-1">Gemini is crunching your results</p>
+                </div>
+              )}
+
+              {aiError && (
+                <div className="text-center py-8">
+                  <div className="text-4xl mb-3">⚠️</div>
+                  <p className="text-navy font-semibold">Analysis failed</p>
+                  <p className="text-navy-light text-sm mt-1">{aiError}</p>
+                  <button
+                    onClick={handleAiAnalysis}
+                    className="mt-4 bg-teal text-white px-6 py-2 rounded-xl font-semibold hover:bg-teal-light transition-colors"
+                  >
+                    Try Again
+                  </button>
+                </div>
+              )}
+
+              {aiAnalysis && (
+                <div className="text-navy whitespace-pre-wrap leading-relaxed text-sm md:text-base">
+                  {aiAnalysis}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     );
   }

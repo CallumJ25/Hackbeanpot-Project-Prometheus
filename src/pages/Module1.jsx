@@ -84,13 +84,26 @@ function Module1({ onQuizComplete, soundEnabled, quizScores }) {
                     <p className="text-navy"><span className="font-semibold text-teal">📌 Key takeaway:</span> {metric.keyTakeaway}</p>
                   </div>
 
-                  <Quiz 
-                    quiz={metric.quiz} 
+                  <Quiz
+                    quiz={metric.quiz}
                     onComplete={(correct) => onQuizComplete(quizId, correct)}
                     soundEnabled={soundEnabled}
                     answered={isAnswered}
                     wasCorrect={wasCorrect}
                     learnMoreUrl={metric.learnMoreUrl}
+                    topicContext={[
+                      `Topic: ${metric.name} — ${metric.subtitle}`,
+                      `Description: ${metric.description}`,
+                      `Formula: ${metric.formula}`,
+                      `Example: ${metric.example}`,
+                      metric.categories ? `Categories:\n${metric.categories.map(c => `  ${c.name} (${c.range}): ${c.description}`).join('\n')}` : null,
+                      metric.insight ? `Context: ${metric.insight}` : null,
+                      metric.keyTakeaway ? `Key Takeaway: ${metric.keyTakeaway}` : null,
+                      `Quiz Question: ${metric.quiz.question}`,
+                      `Quiz Options:\n${metric.quiz.options.map((o, i) => `  ${String.fromCharCode(65 + i)}. ${o}`).join('\n')}`,
+                      `Correct Answer: ${String.fromCharCode(65 + metric.quiz.correct)}. ${metric.quiz.options[metric.quiz.correct]}`,
+                      `Explanation: ${metric.quiz.explanation}`,
+                    ].filter(Boolean).join('\n')}
                   />
                 </div>
               </FadeInSection>
