@@ -220,6 +220,30 @@ export async function sellStock(portfolioId, ticker, quantity, price) {
   }
 }
 
+// UPDATE PORTFOLIO FROM SIMULATION (saves chosen starting amount, year, and result for leaderboard)
+export async function updatePortfolioFromSimulation(portfolioId, { starting_balance, current_balance, investment_year }) {
+  try {
+    const payload = {
+      starting_balance: Number(starting_balance),
+      current_balance: Number(current_balance),
+      cash_available: Number(current_balance),
+    };
+    if (investment_year != null && investment_year !== '') {
+      payload.investment_year = Number(investment_year);
+    }
+    const { error } = await supabase
+      .from('portfolios')
+      .update(payload)
+      .eq('id', portfolioId);
+
+    if (error) throw error;
+    return { success: true };
+  } catch (error) {
+    console.error('Error updating portfolio from simulation:', error);
+    throw error;
+  }
+}
+
 // GET LEADERBOARD
 export async function getLeaderboard(limit = 10) {
   try {
