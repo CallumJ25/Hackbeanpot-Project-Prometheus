@@ -2,7 +2,7 @@ import { FadeInSection } from '../components';
 import StockSimulation from '../StockSimulation';
 import { PageNavigation } from '../PageLayout';
 
-function Simulation() {
+function Simulation({ session }) {
   return (
     <div className="min-h-screen bg-cream-dark pt-20 pb-32 md:pb-12">
       <div className="container mx-auto px-6">
@@ -21,7 +21,7 @@ function Simulation() {
         </FadeInSection>
 
         <FadeInSection delay={0.2}>
-          <StockSimulation />
+          <StockSimulation session={session} />
         </FadeInSection>
 
         <div className="max-w-4xl mx-auto">

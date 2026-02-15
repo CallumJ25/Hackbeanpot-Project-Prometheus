@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { API_BASE_URL, SIMULATION_CONFIG, CATEGORIES, SP500_DATA, FUN_PURCHASES } from './config';
 import { STOCKS_DATA, SECTOR_NAMES } from './stockData';
 import { PortfolioChart } from './components';
+import { getUserData, updatePortfolioFromSimulation } from './supabaseFunctions';
 
 function formatMarketCap(value) {
   if (!value) return null;
@@ -11,7 +12,7 @@ function formatMarketCap(value) {
   return `$${value}`;
 }
 
-const StockSimulation = () => {
+const StockSimulation = ({ session }) => {
   // Load saved state from localStorage
   const [step, setStep] = useState(() => 
     localStorage.getItem('sim_step') || 'setup'
@@ -199,6 +200,23 @@ const StockSimulation = () => {
         });
         const data = await res.json();
         setSimulationResult(data);
+
+        // When signed in, save simulation to DB so leaderboard shows user's amount, year, balance, profit, ROI
+        if (session?.user?.email && data?.starting_cash != null && data?.final_cash != null) {
+          try {
+            const userData = await getUserData(session.user.email);
+            const portfolioId = userData?.portfolios?.[0]?.id;
+            if (portfolioId) {
+              await updatePortfolioFromSimulation(portfolioId, {
+                starting_balance: data.starting_cash,
+                current_balance: data.final_cash,
+                investment_year: config.year,
+              });
+            }
+          } catch (saveErr) {
+            console.warn('Could not save simulation to leaderboard:', saveErr);
+          }
+        }
       } catch (err) {
         setSimulationError(err.message);
       } finally {

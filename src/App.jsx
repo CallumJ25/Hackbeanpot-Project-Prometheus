@@ -150,7 +150,7 @@ function App() {
             quizScores={quizScores}
           />
         } />
-        <Route path="/simulation" element={<Simulation />} />
+        <Route path="/simulation" element={<Simulation session={session} />} />
         <Route path="/conclusion" element={
           <Conclusion 
             totalCorrect={totalCorrect}
